@@ -9,7 +9,7 @@
 | `moon test --target wasm-gc --deny-warn` | 12组，0失败 |
 | `moon test --target js --deny-warn` | 12组，0失败 |
 | `moon run cmd/main` | 公开API示例断言通过：7路径、1632帧响应、16采样公共延迟 |
-| `node --test tests/*.test.mjs` | 5组，0失败；包含32个上游场景、5个BFS场景、完整工作流、CLI不覆盖和错误输入 |
+| `node --test tests/*.test.mjs` | 6组，0失败；包含32个上游场景、5个BFS场景、完整工作流、CLI不覆盖和错误输入 |
 | `python scripts/verify_artifacts.py` | 四套产物（3个工作流）均由SciPy独立读取并验证；数据见artifact-verification.json |
 | 浏览器 | 本地工作台实际生成4032帧双通道RIR及20031帧模拟录音；音频readyState=4、无解码错误，时长1秒/1.251938秒；确认计算期间输入禁用、结果/下载入口出现 |
 
@@ -36,3 +36,5 @@
 发布后补充：Linux [CI 41169960989](https://github.com/zhangbowen2006/BoxRIR/actions/runs/41169960989)已经实际通过四目标各12组测试、Node5组及SciPy新产物验证；在线工作台部署完成、静态文件HTTP200，0.1.0包已发布并在独立目录安装运行通过。线上浏览器工具导航超时，未完成在线互动复核；本地浏览器结果和音频加载已验证，但下载事件被工具取消，未声称自动化下载通过。详见RELEASE-0.1.0.md。
 
 0.1.1补充：显式simulate空WAV文件现在报错且不生成输出目录，CLI和浏览器都增加该检查。对应1298d7d的CI全部通过，0.1.1注册表安装及公开API运行通过，完整证据见RELEASE-0.1.1.md。
+
+网页控制器另有独立单元回归：读取文件前即锁定场景输入，读取期间取消不会发送过期任务，提交场景被快照保留，空文件被拒绝。该测试使用DOM/Worker替身验证调度行为，不冒充真实浏览器端到端测试；当前Node总数为6组。

@@ -101,7 +101,7 @@ python -m pip install numpy==2.5.4 scipy==1.18.1
 python scripts/verify_artifacts.py
 ```
 
-已完成12组MoonBit测试、5组Node测试；独立六墙BFS覆盖5场景/225镜像，pyroomacoustics 0.10.1覆盖32场景/2330镜像。外部实现内部有float32，因此比较使用明确尺度相关容差，未伪称逐位一致。WAV及卷积由SciPy独立核对，详见 [验证记录](docs/VALIDATION.md)。`tests/reference` 保存参考生成器及版本元数据。
+已完成12组MoonBit测试、6组Node测试；独立六墙BFS覆盖5场景/225镜像，pyroomacoustics 0.10.1覆盖32场景/2330镜像。外部实现内部有float32，因此比较使用明确尺度相关容差，未伪称逐位一致。WAV及卷积由SciPy独立核对，详见 [验证记录](docs/VALIDATION.md)。`tests/reference` 保存参考生成器及版本元数据。
 
 Windows Native需要MSVC C++工具与Windows SDK；Linux CI负责原生实际运行。浏览器已验证计算完成、结果展示和音频解码加载，不将其描述成连续全程听审。
 

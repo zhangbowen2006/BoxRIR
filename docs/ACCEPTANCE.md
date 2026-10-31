@@ -10,7 +10,7 @@
 | 至少十个有效提交 | 已有超过十次可追溯、非空的模型、路径、响应、卷积、I/O、接口、工作流和CI开发提交；最终有效性由评委认定 |
 | 公开仓库 | PUBLIC、main及远端SHA已经核验 |
 | README、三完整场景 | README和SUBMISSION列出使用者、问题、输入、操作、输出及验证；examples与outputs提供真实文件 |
-| 必要测试与CI | Linux四目标各12组、Node5组通过，包含独立模拟器、BFS及SciPy对照；持续集成覆盖check/build/test及新产物核验 |
+| 必要测试与CI | Linux四目标各12组、Node6组通过，包含独立模拟器、BFS及SciPy对照；持续集成覆盖check/build/test及新产物核验 |
 | 开源许可证与来源 | Apache-2.0，NOTICE与完整依赖/参考许可已保留，没有把成熟方法称为新算法 |
 | Mooncakes | 0.1.1已发布、未撤回，checksum一致；独立注册表安装与公开API运行通过 |
 | 一页申报 | docs/SUBMISSION.md为正式Markdown，另附同内容的一页PDF预览；按已确认的AI许可口径制作 |
