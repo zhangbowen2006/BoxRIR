@@ -1,0 +1,38 @@
+{
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "cases": [
+    {
+      "case": "stereo",
+      "channels": 2,
+      "rir_frames": 4032,
+      "gain_sum_verified": true
+    },
+    {
+      "case": "wall-before",
+      "channels": 1,
+      "rir_frames": 2912,
+      "gain_sum_verified": true
+    },
+    {
+      "case": "wall-after",
+      "channels": 1,
+      "rir_frames": 2912,
+      "gain_sum_verified": true
+    },
+    {
+      "case": "array",
+      "channels": 3,
+      "rir_frames": 1952,
+      "gain_sum_verified": true,
+      "wet_frames": 5951,
+      "scipy_max_absolute_errors": [
+        1.2464034804260393e-09,
+        1.2416713560114978e-09,
+        1.1873647239035723e-09
+      ]
+    }
+  ],
+  "changed_wall_first_reflection_gain_ratio": 0.3333333333333333,
+  "physical_measurements": false
+}
