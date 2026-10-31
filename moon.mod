@@ -13,17 +13,17 @@ name = "zhangbowen2006/boxrir"
 
 version = "0.1.0"
 
-readme = "README.mbt.md"
+readme = "README.md"
 
 repository = ""
 
 license = "Apache-2.0"
 
-keywords = [ ]
+keywords = [ "acoustics", "image-source", "rir", "simulation" ]
 
 preferred_target = "wasm"
 
-description = ""
+description = "Finite-order shoebox propagation, multichannel room impulse responses and recording simulation in MoonBit"
 
 import {
   "chgttyyr/MoonSpectrum@0.2.2",

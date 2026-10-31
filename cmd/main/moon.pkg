@@ -1,5 +1,5 @@
-// import {
-//   "zhangbowen2006/boxrir" @lib,
-// }
+import {
+  "zhangbowen2006/boxrir" @lib,
+}
 
 pkgtype(kind: "executable")

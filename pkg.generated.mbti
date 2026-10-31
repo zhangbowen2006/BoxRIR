@@ -1,0 +1,77 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "zhangbowen2006/boxrir"
+
+// Values
+pub fn convolve(Response, Array[Double]) -> Result[Audio, String]
+
+pub fn images(Scene) -> Array[ImageSource]
+
+pub fn render(Scene) -> Response
+
+pub fn scene(Vec3, Vec3, Array[Vec3], Array[Double], Int32, Int32, Int32, speed? : Double, half_width? : Int32) -> Result[Scene, String]
+
+pub fn trace(Scene) -> Array[Path]
+
+// Errors
+
+// Types and methods
+pub struct Audio {
+  sample_rate : Int32
+  latency_samples : Int32
+  // private fields
+}
+pub fn Audio::channel(Self, Int32) -> Result[Array[Double], String]
+pub fn Audio::channel_count(Self) -> Int32
+pub fn Audio::frames(Self) -> Int32
+
+pub struct ImageSource {
+  image : Vec3
+  bounces : Array[Int32]
+  order : Int32
+  reflection : Double
+}
+
+pub struct Path {
+  receiver : Int32
+  image : Vec3
+  bounces : Array[Int32]
+  order : Int32
+  distance : Double
+  delay_samples : Double
+  reflection : Double
+  gain : Double
+}
+
+pub struct Response {
+  // private fields
+}
+pub fn Response::channel(Self, Int32) -> Result[Array[Double], String]
+pub fn Response::channel_count(Self) -> Int32
+pub fn Response::contributing_paths(Self) -> Array[Int32]
+pub fn Response::omitted_late_paths(Self) -> Array[Int32]
+pub fn Response::settings(Self) -> Scene
+pub fn Response::zero_gain_paths(Self) -> Array[Int32]
+
+pub struct Scene {
+  // private fields
+}
+pub fn Scene::dimensions(Self) -> Vec3
+pub fn Scene::latency_samples(Self) -> Int32
+pub fn Scene::order(Self) -> Int32
+pub fn Scene::output_frames(Self) -> Int32
+pub fn Scene::physical_frames(Self) -> Int32
+pub fn Scene::rate(Self) -> Int32
+pub fn Scene::receiver_positions(Self) -> Array[Vec3]
+pub fn Scene::sound_speed(Self) -> Double
+pub fn Scene::source_position(Self) -> Vec3
+pub fn Scene::wall_absorption(Self) -> Array[Double]
+
+pub(all) struct Vec3 {
+  x : Double
+  y : Double
+  z : Double
+}
+
+// Type aliases
+
+// Traits

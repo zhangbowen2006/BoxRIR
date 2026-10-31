@@ -1,0 +1,19 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "zhangbowen2006/boxrir/io"
+
+// Values
+pub fn read_mono(Bytes) -> Result[DryAudio, String]
+
+pub fn write_float32(Array[Array[Double]], Int32) -> Result[Bytes, String]
+
+// Errors
+
+// Types and methods
+pub struct DryAudio {
+  samples : Array[Double]
+  sample_rate : Int32
+}
+
+// Type aliases
+
+// Traits

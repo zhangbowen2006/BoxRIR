@@ -1,0 +1,57 @@
+name: verify-and-deploy
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install official MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Check and test four targets
+        run: |
+          moon version --all
+          moon update
+          moon fmt --check
+          moon check --target all --deny-warn
+          moon build --target all --deny-warn
+          moon test --target all --deny-warn
+          moon run cmd/main
+          moon info
+          git diff --exit-code -- '*.mbti'
+      - name: Differential and workflow tests
+        run: |
+          moon build --target js --release --deny-warn
+          node --test tests/*.test.mjs
+          for name in stereo wall-before wall-after; do node bin/boxrir.mjs rir examples/$name.json _build/verification/$name; done
+          node bin/boxrir.mjs simulate examples/array.json examples/probe.wav _build/verification/array
+          python -m pip install numpy==2.5.4 scipy==1.18.1
+          python scripts/verify_artifacts.py --directory _build/verification
+          node scripts/build-demo.mjs
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        with:
+          path: _build/demo
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy workbench
+        id: deployment
+        uses: actions/deploy-pages@v4
