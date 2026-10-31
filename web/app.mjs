@@ -2,7 +2,7 @@ const $=id=>document.getElementById(id);
 let worker,probe,presets={},urls=[],last,dryURL;
 function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
 function resetWorker(){worker?.terminate();worker=new Worker(new URL('./worker.mjs',import.meta.url),{type:'module'});worker.onmessage=e=>finish(e.data);worker.onerror=e=>finish({ok:false,error:e.message});}
-function busy(value){$('run').disabled=value;$('cancel').disabled=!value;}
+function busy(value){$('run').disabled=value;$('cancel').disabled=!value;for(const id of ['preset','source','scene'])$(id).disabled=value;}
 function blobURL(bytes,type){const url=URL.createObjectURL(new Blob([bytes],{type}));urls.push(url);return url;}
 function drawRoom(scene){
   const [lx,ly]=scene.room;if(!(lx>0&&ly>0))return;
@@ -22,7 +22,7 @@ function audition(){
 function finish(result){
   busy(false);if(!result.ok){status(result.error,true);return;}
   last=result;$('results').classList.remove('hidden');$('empty').classList.add('hidden');
-  const r=result.report,c=r.config;$('channels').textContent=c.receivers.length;$('images').textContent=r.geometric_images;$('latency').textContent=`${(1000*c.latency_samples/c.sample_rate).toFixed(2)} ms`;
+  const r=result.report,c=r.config;drawRoom(c);$('channels').textContent=c.receivers.length;$('images').textContent=r.geometric_images;$('latency').textContent=`${(1000*c.latency_samples/c.sample_rate).toFixed(2)} ms`;
   $('dry-player').src=dryURL;audition();
   $('paths').replaceChildren();for(let i=0;i<c.receivers.length;i++){
     const direct=r.paths.find(p=>p.receiver===i&&p.order===0),tr=document.createElement('tr');
@@ -38,7 +38,7 @@ $('listen-gain').onchange=audition;
 $('cancel').onclick=()=>{resetWorker();busy(false);status('已取消。可以调整参数后重新计算。');};
 $('run').onclick=async()=>{
   try{
-    const data=JSON.parse($('scene').value);drawRoom(data);
+    JSON.parse($('scene').value);
     const file=$('source').files[0];if(file&&file.size>4194304)throw new Error('WAV 文件不能超过 4 MiB');
     const dry=file?await file.arrayBuffer():probe.slice(0);
     urls.forEach(URL.revokeObjectURL);urls=[];$('results').classList.add('hidden');last=null;dryURL=blobURL(dry,'audio/wav');

@@ -6,13 +6,99 @@ pub struct DryAudio {
 }
 
 ///|
+/// Bounds-check chunk framing in a wider integer before invoking the codec.
+/// Metadata is discarded, not recursively interpreted. Only fmt/data are needed.
+fn audio_chunks(bytes : Bytes) -> Result[Bytes, String] {
+  if bytes.length() < 12 {
+    return Err("WAV header is truncated")
+  }
+  fn is_tag(bytes : Bytes, offset : Int32, tag : String) -> Bool {
+    let mut i = offset
+    for c in tag.iter() {
+      if bytes[i].to_int() != c.to_int() {
+        return false
+      }
+      i = i + 1
+    }
+    true
+  }
+  fn u32(bytes : Bytes, offset : Int32) -> Int64 {
+    let mut value = 0L
+    for i = 0; i < 4; i = i + 1 {
+      value = value | (bytes[offset + i].to_int().to_int64() << (8 * i))
+    }
+    value
+  }
+  if !is_tag(bytes, 0, "RIFF") || !is_tag(bytes, 8, "WAVE") {
+    return Err("source must be RIFF/WAVE")
+  }
+  if u32(bytes, 4) != (bytes.length() - 8).to_int64() {
+    return Err("RIFF size does not match input length")
+  }
+  let kept : Array[Byte] = [82, 73, 70, 70, 0, 0, 0, 0, 87, 65, 86, 69].map(fn(
+    v,
+  ) {
+    v.to_byte()
+  })
+  let mut offset = 12
+  let mut has_format = false
+  let mut has_data = false
+  while offset < bytes.length() {
+    if bytes.length() - offset < 8 {
+      return Err("truncated RIFF chunk header")
+    }
+    let size64 = u32(bytes, offset + 4)
+    if size64 > (bytes.length() - offset - 8).to_int64() {
+      return Err("RIFF chunk exceeds input bounds")
+    }
+    let size = size64.to_int()
+    let end = offset + 8 + size
+    let padding = size % 2
+    if padding > bytes.length() - end {
+      return Err("missing RIFF chunk padding")
+    }
+    let is_format = is_tag(bytes, offset, "fmt ")
+    let is_data = is_tag(bytes, offset, "data")
+    if is_format {
+      if has_format || size < 16 || size > 64 {
+        return Err("invalid or duplicate format chunk")
+      }
+      has_format = true
+    }
+    if is_data {
+      if has_data {
+        return Err("duplicate data chunk")
+      }
+      has_data = true
+    }
+    if is_format || is_data {
+      for i = offset; i < end + padding; i = i + 1 {
+        kept.push(bytes[i])
+      }
+    }
+    offset = end + padding
+  }
+  if !has_format || !has_data {
+    return Err("WAV needs format and data chunks")
+  }
+  for i = 0; i < 4; i = i + 1 {
+    kept[4 + i] = (((kept.length() - 8) >> (8 * i)) & 255).to_byte()
+  }
+  Ok(Bytes::from_array(kept))
+}
+
+///|
 /// Reuses MoonWavKit for RIFF/PCM decoding; rejects nonfinite float samples before
 /// the upstream decoder can replace them with zero.
 pub fn read_mono(bytes : Bytes) -> Result[DryAudio, String] {
   if bytes.length() > 4194304 {
     return Err("source WAV byte limit: 4194304")
   }
-  let raw = Array::makei(bytes.length(), fn(i) { bytes[i].to_int() })
+  let clean = match audio_chunks(bytes) {
+    Err(e) => return Err(e)
+    Ok(v) => v
+  }
+  let raw = Array::makei(clean.length(), fn(i) { clean[i].to_int() })
   let parsed = @wav.parse_wav(raw)
   if !parsed.ok {
     return Err(parsed.error.message)
