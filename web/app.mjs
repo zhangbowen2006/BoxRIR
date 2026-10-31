@@ -1,0 +1,53 @@
+const $=id=>document.getElementById(id);
+let worker,probe,presets={},urls=[],last,dryURL;
+function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
+function resetWorker(){worker?.terminate();worker=new Worker(new URL('./worker.mjs',import.meta.url),{type:'module'});worker.onmessage=e=>finish(e.data);worker.onerror=e=>finish({ok:false,error:e.message});}
+function busy(value){$('run').disabled=value;$('cancel').disabled=!value;}
+function blobURL(bytes,type){const url=URL.createObjectURL(new Blob([bytes],{type}));urls.push(url);return url;}
+function drawRoom(scene){
+  const [lx,ly]=scene.room;if(!(lx>0&&ly>0))return;
+  const scale=Math.min(430/lx,190/ly),x=35,y=30,w=lx*scale,h=ly*scale;
+  let markup=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#edf7f6" stroke="#087e8b" stroke-width="2"/><text x="${x}" y="${y+h+24}" font-size="12" fill="#526b79">${lx} m × ${ly} m · XY 平面</text>`;
+  const point=(p,color,label)=>`<circle cx="${x+p[0]*scale}" cy="${y+h-p[1]*scale}" r="6" fill="${color}"/><text x="${x+p[0]*scale+9}" y="${y+h-p[1]*scale+4}" font-size="12" fill="#173547">${label}</text>`;
+  markup+=point(scene.source,'#c2410c','S');scene.receivers.forEach((p,i)=>{markup+=point(p,'#2563eb',`M${i}`)});$('floor').innerHTML=markup;
+}
+function audition(){
+  if(!last?.wet_wav)return;
+  let bytes=new Uint8Array(last.wet_wav),gain=1;
+  if($('listen-gain').checked){
+    const peak=Math.max(...last.report.wet.peaks);if(peak>0){gain=Math.min(1000,0.85/peak);const view=new DataView(bytes.buffer);for(let i=58;i<bytes.length;i+=4)view.setFloat32(i,view.getFloat32(i,true)*gain,true);}
+  }
+  $('wet-player').src=blobURL(bytes,'audio/wav');$('gain-note').textContent=`试听增益 ${gain.toFixed(3)} 倍，所有通道统一处理。下载文件保持原始模型增益。`;
+}
+function finish(result){
+  busy(false);if(!result.ok){status(result.error,true);return;}
+  last=result;$('results').classList.remove('hidden');$('empty').classList.add('hidden');
+  const r=result.report,c=r.config;$('channels').textContent=c.receivers.length;$('images').textContent=r.geometric_images;$('latency').textContent=`${(1000*c.latency_samples/c.sample_rate).toFixed(2)} ms`;
+  $('dry-player').src=dryURL;audition();
+  $('paths').replaceChildren();for(let i=0;i<c.receivers.length;i++){
+    const direct=r.paths.find(p=>p.receiver===i&&p.order===0),tr=document.createElement('tr');
+    for(const value of [`M${i}`,`${(direct.delay_samples/c.sample_rate*1000).toFixed(3)} ms`,r.contributing_paths[i],r.omitted_late_paths[i]]){const td=document.createElement('td');td.textContent=value;tr.append(td);}$('paths').append(tr);
+  }
+  $('downloads').replaceChildren();for(const [name,data,type] of [['rir.wav',new Uint8Array(result.rir_wav),'audio/wav'],['wet.wav',new Uint8Array(result.wet_wav),'audio/wav'],['report.json',JSON.stringify(r,null,2),'application/json'],['scene.json',$('scene').value,'application/json']]){
+    const a=document.createElement('a');a.className='download';a.textContent=name;a.download=name;a.href=blobURL(data,type);$('downloads').append(a);
+  }
+  status(`计算完成：${c.output_frames} 帧响应，${r.wet.frames} 帧模拟录音。时间窗之外的路径计数见上表。`);
+}
+$('preset').onchange=()=>{$('scene').value=JSON.stringify(presets[$('preset').value],null,2);drawRoom(presets[$('preset').value]);};
+$('listen-gain').onchange=audition;
+$('cancel').onclick=()=>{resetWorker();busy(false);status('已取消。可以调整参数后重新计算。');};
+$('run').onclick=async()=>{
+  try{
+    const data=JSON.parse($('scene').value);drawRoom(data);
+    const file=$('source').files[0];if(file&&file.size>4194304)throw new Error('WAV 文件不能超过 4 MiB');
+    const dry=file?await file.arrayBuffer():probe.slice(0);
+    urls.forEach(URL.revokeObjectURL);urls=[];$('results').classList.add('hidden');last=null;dryURL=blobURL(dry,'audio/wav');
+    busy(true);status('正在计算传播路径与模拟录音…');worker.postMessage({scene:$('scene').value,dry},[dry]);
+  }catch(e){busy(false);status(e.message,true);}
+};
+try{
+  const names=['stereo','wall-before','wall-after','array'];
+  const responses=await Promise.all(names.map(n=>fetch(`examples/${n}.json`).then(r=>{if(!r.ok)throw Error('示例加载失败');return r.json()})));
+  names.forEach((n,i)=>presets[n]=responses[i]);probe=await fetch('examples/probe.wav').then(r=>r.arrayBuffer());
+  resetWorker();$('preset').onchange();status('已就绪。计算在本浏览器内运行。');
+}catch(e){status(e.message,true);$('run').disabled=true;}
