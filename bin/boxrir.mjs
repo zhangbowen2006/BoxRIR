@@ -29,6 +29,7 @@ try{
     console.log(JSON.stringify(result,null,2));
   }else{
     const dry=command==='simulate'?read(args[0],4194304):new Uint8Array();
+    if(command==='simulate'&&dry.length===0)throw new Error('Source WAV file is empty');
     const result=JSON.parse(generate_json(scene,dry));if(!result.ok)throw new Error(result.error);
     const directory=path.resolve(args.at(-1));
     if(fs.existsSync(directory))throw new Error('Output directory already exists: '+directory);

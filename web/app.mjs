@@ -39,7 +39,7 @@ $('cancel').onclick=()=>{resetWorker();busy(false);status('已取消。可以调
 $('run').onclick=async()=>{
   try{
     JSON.parse($('scene').value);
-    const file=$('source').files[0];if(file&&file.size>4194304)throw new Error('WAV 文件不能超过 4 MiB');
+    const file=$('source').files[0];if(file&&file.size===0)throw new Error('选择的 WAV 文件为空');if(file&&file.size>4194304)throw new Error('WAV 文件不能超过 4 MiB');
     const dry=file?await file.arrayBuffer():probe.slice(0);
     urls.forEach(URL.revokeObjectURL);urls=[];$('results').classList.add('hidden');last=null;dryURL=blobURL(dry,'audio/wav');
     busy(true);status('正在计算传播路径与模拟录音…');worker.postMessage({scene:$('scene').value,dry},[dry]);

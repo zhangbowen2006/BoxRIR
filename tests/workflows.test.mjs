@@ -37,6 +37,9 @@ test('CLI performs file I/O and never replaces an existing output directory',()=
     assert.ok(!fs.existsSync(path.join(dest,'.boxrir-incomplete')));
     const b=spawnSync(process.execPath,['bin/boxrir.mjs','rir','examples/stereo.json',dest],{encoding:'utf8'});
     assert.equal(b.status,2);assert.match(b.stderr,/already exists/);
+    const empty=path.join(temp,'empty.wav'),badDest=path.join(temp,'invalid');fs.writeFileSync(empty,'');
+    const failed=spawnSync(process.execPath,['bin/boxrir.mjs','simulate','examples/array.json',empty,badDest],{encoding:'utf8'});
+    assert.equal(failed.status,2);assert.match(failed.stderr,/empty/);assert.ok(!fs.existsSync(badDest));
   }finally{assert.equal(path.dirname(temp),os.tmpdir());fs.rmSync(temp,{recursive:true,force:true});}
 });
 test('invalid configurations fail before simulation rather than silently correcting values',()=>{
