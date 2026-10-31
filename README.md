@@ -1,5 +1,7 @@
 # BoxRIR
 
+[在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [公开仓库](https://github.com/zhangbowen2006/BoxRIR) · [Mooncakes 0.1.1](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.1.1) · [正式申报书](docs/SUBMISSION.md) · [一页PDF](output/pdf/BoxRIR-项目申报书-20261031.pdf) · [验收对照](docs/ACCEPTANCE.md)
+
 **把三维房间和声源位置转换为多通道脉冲响应及模拟录音。** 核心由 MoonBit 实现，提供类型化 API、JSON CLI 和浏览器工作台。生产计算不运行 Python 或调用外部声学模拟程序。
 
 输入房间尺寸、六面墙的能量吸声系数、一个声源和 1–8 个接收点；输出可直接使用的 Float32 WAV、逐路径传播报告、CSV 与响应图。适用于游戏音频原型、麦克风阵列算法、声学教学和可复现语音数据增强。
@@ -53,6 +55,8 @@ node scripts/serve-demo.mjs
 这些是完整可运行的合成实验，没有外部用户采用或现场测量证据。提交的 [outputs](outputs) 可直接查看和播放。
 
 ## 输入与 API
+
+已验证注册表安装：`moon add zhangbowen2006/boxrir@0.1.1`。精确版本、源码标签、校验值和独立消费结果见 [发布记录](docs/RELEASE-0.1.1.md)。
 
 ```json
 {"room":[6,4,3],"source":[1.5,1,1.5],"receivers":[[4,1.8,1.4],[4,2.2,1.4]],"absorption":[0.15,0.3,0.25,0.4,0.35,0.2],"sample_rate":16000,"max_order":6,"duration_ms":250,"speed":343,"half_width":16}
