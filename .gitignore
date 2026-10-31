@@ -4,3 +4,7 @@ target/
 target
 .mooncakes/
 .moonagent/
+/generated/
+/tmp/
+__pycache__/
+*.pyc
