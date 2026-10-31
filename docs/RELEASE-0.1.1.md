@@ -2,6 +2,8 @@
 
 本版本修复显式模拟请求的空WAV文件处理：此前零字节文件会触发API的“仅生成RIR”分支；CLI和网页现在明确拒绝空文件。核心物理模型、API和正常示例数值未变化。这是实际行为修复，不是文档占位版本。
 
+在线工作台跟随main更新；库的v0.1.1标签固定发布代码。随后网页交互还收紧了文件读取期间的输入锁定、取消和场景快照，不改变库的模型数值与已发布接口。
+
 - GitHub与Mooncakes实际账号：zhangbowen2006。
 - 源码标签：[v0.1.1](https://github.com/zhangbowen2006/BoxRIR/tree/v0.1.1)，对应1298d7d3fb0b11f8ebf4a26996a78eea3eccf5dd。
 - [CI及在线部署](https://github.com/zhangbowen2006/BoxRIR/actions/runs/41171050128)全部通过，仍为四目标各12组、Node5组及SciPy新产物验证；CLI回归增加空文件必须报错且不生成目录的断言。

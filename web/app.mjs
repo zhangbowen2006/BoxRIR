@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
-let worker,probe,presets={},urls=[],last,dryURL;
+let worker,probe,presets={},urls=[],last,dryURL,requestSerial=0,submittedScene='';
 function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
-function resetWorker(){worker?.terminate();worker=new Worker(new URL('./worker.mjs',import.meta.url),{type:'module'});worker.onmessage=e=>finish(e.data);worker.onerror=e=>finish({ok:false,error:e.message});}
+function resetWorker(){worker?.terminate();const next=new Worker(new URL('./worker.mjs',import.meta.url),{type:'module'});worker=next;next.onmessage=e=>{if(worker===next)finish(e.data);};next.onerror=e=>{if(worker===next)finish({ok:false,error:e.message});};}
 function busy(value){$('run').disabled=value;$('cancel').disabled=!value;for(const id of ['preset','source','scene'])$(id).disabled=value;}
 function blobURL(bytes,type){const url=URL.createObjectURL(new Blob([bytes],{type}));urls.push(url);return url;}
 function drawRoom(scene){
@@ -28,26 +28,30 @@ function finish(result){
     const direct=r.paths.find(p=>p.receiver===i&&p.order===0),tr=document.createElement('tr');
     for(const value of [`M${i}`,`${(direct.delay_samples/c.sample_rate*1000).toFixed(3)} ms`,r.contributing_paths[i],r.omitted_late_paths[i]]){const td=document.createElement('td');td.textContent=value;tr.append(td);}$('paths').append(tr);
   }
-  $('downloads').replaceChildren();for(const [name,data,type] of [['rir.wav',new Uint8Array(result.rir_wav),'audio/wav'],['wet.wav',new Uint8Array(result.wet_wav),'audio/wav'],['report.json',JSON.stringify(r,null,2),'application/json'],['scene.json',$('scene').value,'application/json']]){
+  $('downloads').replaceChildren();for(const [name,data,type] of [['rir.wav',new Uint8Array(result.rir_wav),'audio/wav'],['wet.wav',new Uint8Array(result.wet_wav),'audio/wav'],['report.json',JSON.stringify(r,null,2),'application/json'],['scene.json',submittedScene,'application/json']]){
     const a=document.createElement('a');a.className='download';a.textContent=name;a.download=name;a.href=blobURL(data,type);$('downloads').append(a);
   }
   status(`计算完成：${c.output_frames} 帧响应，${r.wet.frames} 帧模拟录音。时间窗之外的路径计数见上表。`);
 }
 $('preset').onchange=()=>{$('scene').value=JSON.stringify(presets[$('preset').value],null,2);drawRoom(presets[$('preset').value]);};
 $('listen-gain').onchange=audition;
-$('cancel').onclick=()=>{resetWorker();busy(false);status('已取消。可以调整参数后重新计算。');};
+$('cancel').onclick=()=>{requestSerial++;resetWorker();busy(false);status('已取消。可以调整参数后重新计算。');};
 $('run').onclick=async()=>{
+  const request=++requestSerial;
   try{
-    JSON.parse($('scene').value);
+    const sceneText=$('scene').value;JSON.parse(sceneText);
     const file=$('source').files[0];if(file&&file.size===0)throw new Error('选择的 WAV 文件为空');if(file&&file.size>4194304)throw new Error('WAV 文件不能超过 4 MiB');
+    busy(true);status('正在读取声源…');
     const dry=file?await file.arrayBuffer():probe.slice(0);
+    if(request!==requestSerial)return;
+    submittedScene=sceneText;
     urls.forEach(URL.revokeObjectURL);urls=[];$('results').classList.add('hidden');last=null;dryURL=blobURL(dry,'audio/wav');
-    busy(true);status('正在计算传播路径与模拟录音…');worker.postMessage({scene:$('scene').value,dry},[dry]);
-  }catch(e){busy(false);status(e.message,true);}
+    status('正在计算传播路径与模拟录音…');worker.postMessage({scene:sceneText,dry},[dry]);
+  }catch(e){if(request===requestSerial){busy(false);status(e.message,true);}}
 };
 try{
   const names=['stereo','wall-before','wall-after','array'];
   const responses=await Promise.all(names.map(n=>fetch(`examples/${n}.json`).then(r=>{if(!r.ok)throw Error('示例加载失败');return r.json()})));
   names.forEach((n,i)=>presets[n]=responses[i]);probe=await fetch('examples/probe.wav').then(r=>r.arrayBuffer());
-  resetWorker();$('preset').onchange();status('已就绪。计算在本浏览器内运行。');
+  resetWorker();$('preset').onchange();busy(false);status('已就绪。计算在本浏览器内运行。');
 }catch(e){status(e.message,true);$('run').disabled=true;}
