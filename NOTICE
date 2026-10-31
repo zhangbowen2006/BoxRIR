@@ -1,0 +1,16 @@
+BoxRIR is distributed under Apache-2.0; see LICENSE.
+
+The physical model is the established Allen-Berkley image-source method.
+Model conventions were checked against pyroomacoustics (MIT) and AudioLabs
+rir-generator (MIT). pyroomacoustics 0.10.1 is used only for independent
+development fixtures. No Python/C++ simulation service is used at runtime.
+
+Runtime package dependencies:
+chgttyyr/MoonSpectrum 0.2.2 - Apache-2.0 (FFT convolution).
+Ridge-Lab/moonwavkit 0.1.3 - MIT (WAV input decoding).
+moonbitlang/x 0.4.45 - Apache-2.0 (declared transitive dependency).
+MoonBit core - Apache-2.0.
+
+Full direct-dependency and reference license texts are in docs/licenses/.
+Upstream copyrights and terms remain applicable; dependency functionality
+is not represented as newly developed by BoxRIR.
