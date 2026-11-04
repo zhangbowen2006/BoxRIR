@@ -1,5 +1,15 @@
 # Independent image-source fixtures
 
+## Local convex-prism extension (2026-11-05)
+
+`generate_prism.py` uses pyroomacoustics 0.10.1 Room.from_corners/extrude,
+image_source_model and per-microphone visibility. It does not implement the
+MoonBit reflection/backtrace equations. The pinned output contains 16 scenes
+(rectangle, triangle, trapezoid, pentagon; orders 0..3), 718 visible paths.
+`tests/prism.test.mjs` checks counts, receiver/order, image coordinates within
+4e-5 m and pressure reflections within 3e-6. Different FIR kernels mean this is
+not an upstream waveform comparison. These remain synthetic development cases.
+
 These are synthetic development fixtures, not measured rooms or claimed user deployments. They do not require Python at production runtime.
 
 ## Upstream comparison

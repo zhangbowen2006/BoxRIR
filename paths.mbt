@@ -18,6 +18,9 @@ const PI : Double = 3.141592653589793
 /// Includes all finite-order geometric paths, even beyond the recording window.
 /// Receiver-major, then reflection order / image coordinate order.
 pub fn trace(s : Scene) -> Array[Path] {
+  if s.footprint is Some(_) {
+    return trace_prism(s).map(fn(p) { p.path })
+  }
   let sources = images(s)
   let out : Array[Path] = []
   for receiver = 0; receiver < s.receivers.length(); receiver = receiver + 1 {

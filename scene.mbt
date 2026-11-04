@@ -17,6 +17,7 @@ pub struct Scene {
   priv frames : Int32
   priv speed : Double
   priv half_width : Int32
+  priv footprint : Array[Point2]?
 }
 
 ///|
@@ -102,6 +103,7 @@ pub fn scene(
     frames,
     speed,
     half_width,
+    footprint: None,
   })
 }
 

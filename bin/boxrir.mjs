@@ -34,7 +34,8 @@ try{
     const directory=path.resolve(args.at(-1));
     if(fs.existsSync(directory))throw new Error('Output directory already exists: '+directory);
     const report=result.report,rir=Buffer.from(result.rir_wav);
-    const csv=['receiver,order,distance_m,arrival_sample,gain,x_low,x_high,y_low,y_high,z_low,z_high',...report.paths.map(p=>[p.receiver,p.order,p.distance,p.delay_samples,p.gain,...p.bounces].join(','))].join('\n')+'\n';
+    const walls=report.config.geometry==='convex_prism'?[...report.config.footprint.map((_,i)=>`edge_${i}`),'floor','ceiling']:['x_low','x_high','y_low','y_high','z_low','z_high'];
+    const csv=[['receiver','order','distance_m','arrival_sample','gain',...walls].join(','),...report.paths.map(p=>[p.receiver,p.order,p.distance,p.delay_samples,p.gain,...p.bounces].join(','))].join('\n')+'\n';
     const files=[['rir.wav',rir],['report.json',JSON.stringify(report,null,2)+'\n'],['paths.csv',csv],['response.svg',waveform(rir,report)]];
     if(result.wet_wav!==null)files.push(['wet.wav',Buffer.from(result.wet_wav)]);
     fs.mkdirSync(path.dirname(directory),{recursive:true});fs.mkdirSync(directory);

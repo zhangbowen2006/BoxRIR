@@ -1,5 +1,7 @@
 # BoxRIR
 
+> **2026-11-05 本地开发分支：未推送、未发布。** 已增加凸多边形竖直挤出房间（3–8 个顶点）、有限墙面的反射路径有效性检查、三角形/梯形/五边形浏览器和 CLI 工作流。18 项 MoonBit 测试和 9 项 Node 测试通过；新增 16 场景 / 718 条有效路径与 pyroomacoustics 对照。下方公开链接仍对应原来 0.1.1，不包含本地扩展。详见 [本地实现及验证](docs/LOCAL-20261105.md)。
+
 [在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [公开仓库](https://github.com/zhangbowen2006/BoxRIR) · [Mooncakes 0.1.1](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.1.1) · [正式申报书](docs/SUBMISSION.md) · [一页PDF](output/pdf/BoxRIR-项目申报书-20261031.pdf) · [验收对照](docs/ACCEPTANCE.md)
 
 **把三维房间和声源位置转换为多通道脉冲响应及模拟录音。** 核心由 MoonBit 实现，提供类型化 API、JSON CLI 和浏览器工作台。生产计算不运行 Python 或调用外部声学模拟程序。

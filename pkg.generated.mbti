@@ -6,11 +6,15 @@ pub fn convolve(Response, Array[Double]) -> Result[Audio, String]
 
 pub fn images(Scene) -> Array[ImageSource]
 
+pub fn prism_scene(Array[Point2], Double, Vec3, Array[Vec3], Array[Double], Int32, Int32, Int32, speed? : Double, half_width? : Int32) -> Result[Scene, String]
+
 pub fn render(Scene) -> Response
 
 pub fn scene(Vec3, Vec3, Array[Vec3], Array[Double], Int32, Int32, Int32, speed? : Double, half_width? : Int32) -> Result[Scene, String]
 
 pub fn trace(Scene) -> Array[Path]
+
+pub fn trace_prism(Scene) -> Array[SpecularPath]
 
 // Errors
 
@@ -42,6 +46,11 @@ pub struct Path {
   gain : Double
 }
 
+pub(all) struct Point2 {
+  x : Double
+  y : Double
+}
+
 pub struct Response {
   // private fields
 }
@@ -56,6 +65,7 @@ pub struct Scene {
   // private fields
 }
 pub fn Scene::dimensions(Self) -> Vec3
+pub fn Scene::floor_plan(Self) -> Array[Point2]?
 pub fn Scene::latency_samples(Self) -> Int32
 pub fn Scene::order(Self) -> Int32
 pub fn Scene::output_frames(Self) -> Int32
@@ -65,6 +75,12 @@ pub fn Scene::receiver_positions(Self) -> Array[Vec3]
 pub fn Scene::sound_speed(Self) -> Double
 pub fn Scene::source_position(Self) -> Vec3
 pub fn Scene::wall_absorption(Self) -> Array[Double]
+
+pub struct SpecularPath {
+  path : Path
+  walls : Array[Int32]
+  hits : Array[Vec3]
+}
 
 pub(all) struct Vec3 {
   x : Double

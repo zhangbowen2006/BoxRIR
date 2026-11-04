@@ -1,5 +1,6 @@
 ///|
-/// One unique image source; counts use x-low,x-high,y-low,y-high,z-low,z-high.
+/// Shoebox images are unique; prism candidates are reflection words before
+/// finite-face visibility checks. Bounce slots follow the scene geometry.
 pub struct ImageSource {
   image : Vec3
   bounces : Array[Int32]
@@ -42,8 +43,12 @@ fn power(base : Double, count : Int32) -> Double {
 }
 
 ///|
-/// Enumerate distinct images by total reflection order, including zero-gain paths.
+/// Enumerate geometric candidates, including zero-gain ones. For prisms use
+/// trace/trace_prism for physically visible paths, not the raw candidates here.
 pub fn images(s : Scene) -> Array[ImageSource] {
+  if s.footprint is Some(_) {
+    return prism_images(s).map(fn(im) { im.model })
+  }
   let xs = axis_images(s.room.x, s.source.x, s.max_order)
   let ys = axis_images(s.room.y, s.source.y, s.max_order)
   let zs = axis_images(s.room.z, s.source.z, s.max_order)

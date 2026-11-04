@@ -36,6 +36,8 @@ jobs:
           node bin/boxrir.mjs simulate examples/array.json examples/probe.wav _build/verification/array
           python -m pip install numpy==2.5.4 scipy==1.18.1
           python scripts/verify_artifacts.py --directory _build/verification
+          for name in triangle trapezoid pentagon; do node bin/boxrir.mjs simulate examples/$name.json examples/probe.wav generated/prism-workflows/$name; done
+          python scripts/verify-prism-artifacts.py
           node scripts/build-demo.mjs
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

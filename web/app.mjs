@@ -5,9 +5,10 @@ function resetWorker(){worker?.terminate();const next=new Worker(new URL('./work
 function busy(value){$('run').disabled=value;$('cancel').disabled=!value;for(const id of ['preset','source','scene'])$(id).disabled=value;}
 function blobURL(bytes,type){const url=URL.createObjectURL(new Blob([bytes],{type}));urls.push(url);return url;}
 function drawRoom(scene){
-  const [lx,ly]=scene.room;if(!(lx>0&&ly>0))return;
+  const vertices=scene.footprint||[[0,0],[scene.room[0],0],scene.room.slice(0,2),[0,scene.room[1]]];
+  const lx=Math.max(...vertices.map(p=>p[0])),ly=Math.max(...vertices.map(p=>p[1]));if(!(lx>0&&ly>0))return;
   const scale=Math.min(430/lx,190/ly),x=35,y=30,w=lx*scale,h=ly*scale;
-  let markup=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#edf7f6" stroke="#087e8b" stroke-width="2"/><text x="${x}" y="${y+h+24}" font-size="12" fill="#526b79">${lx} m × ${ly} m · XY 平面</text>`;
+  let markup=`<polygon points="${vertices.map(p=>`${x+p[0]*scale},${y+h-p[1]*scale}`).join(' ')}" fill="#edf7f6" stroke="#087e8b" stroke-width="2"/><text x="${x}" y="${y+h+24}" font-size="12" fill="#526b79">${scene.footprint?'凸多边形房间':'矩形房间'} · XY 平面 · 单位 m</text>`;
   const point=(p,color,label)=>`<circle cx="${x+p[0]*scale}" cy="${y+h-p[1]*scale}" r="6" fill="${color}"/><text x="${x+p[0]*scale+9}" y="${y+h-p[1]*scale+4}" font-size="12" fill="#173547">${label}</text>`;
   markup+=point(scene.source,'#c2410c','S');scene.receivers.forEach((p,i)=>{markup+=point(p,'#2563eb',`M${i}`)});$('floor').innerHTML=markup;
 }
@@ -50,7 +51,7 @@ $('run').onclick=async()=>{
   }catch(e){if(request===requestSerial){busy(false);status(e.message,true);}}
 };
 try{
-  const names=['stereo','wall-before','wall-after','array'];
+  const names=['stereo','wall-before','wall-after','array','triangle','trapezoid','pentagon'];
   const responses=await Promise.all(names.map(n=>fetch(`examples/${n}.json`).then(r=>{if(!r.ok)throw Error('示例加载失败');return r.json()})));
   names.forEach((n,i)=>presets[n]=responses[i]);probe=await fetch('examples/probe.wav').then(r=>r.arrayBuffer());
   resetWorker();$('preset').onchange();busy(false);status('已就绪。计算在本浏览器内运行。');

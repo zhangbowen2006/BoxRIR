@@ -1,6 +1,8 @@
 ///|
 priv struct Input {
-  room : Array[Double]
+  room : Array[Double]?
+  footprint : Array[Array[Double]]?
+  height : Double?
   source : Array[Double]
   receivers : Array[Array[Double]]
   absorption : Array[Double]
@@ -64,7 +66,7 @@ pub fn parse_scene(text : String) -> Result[@core.Scene, String] {
     for key, value in fields {
       if ![
           "room", "source", "receivers", "absorption", "sample_rate", "max_order",
-          "duration_ms", "speed", "half_width",
+          "duration_ms", "speed", "half_width", "footprint", "height",
         ].contains(key) {
         return Err("unknown scene field: " + key)
       }
@@ -89,10 +91,6 @@ pub fn parse_scene(text : String) -> Result[@core.Scene, String] {
     !bounded_int(half, 4, 32) {
     return Err("rate/order/duration/kernel out of range")
   }
-  let room = match point(input.room) {
-    Err(e) => return Err(e)
-    Ok(v) => v
-  }
   let source = match point(input.source) {
     Err(e) => return Err(e)
     Ok(v) => v
@@ -109,20 +107,51 @@ pub fn parse_scene(text : String) -> Result[@core.Scene, String] {
       },
     )
   }
-  @core.scene(
-    room,
-    source,
-    receivers,
-    input.absorption,
-    input.sample_rate.to_int(),
-    input.max_order.to_int(),
-    input.duration_ms.to_int(),
-    speed=match input.speed {
-      None => 343.0
-      Some(v) => v
-    },
-    half_width=half.to_int(),
-  )
+  let speed = input.speed.unwrap_or(343.0)
+  match (input.room, input.footprint, input.height) {
+    (None, Some(vertices), Some(height)) => {
+      let footprint : Array[@core.Point2] = []
+      for p in vertices {
+        if p.length() != 2 {
+          return Err("footprint vertices require exactly two numbers")
+        }
+        footprint.push({ x: p[0], y: p[1], })
+      }
+      @core.prism_scene(
+        footprint,
+        height,
+        source,
+        receivers,
+        input.absorption,
+        input.sample_rate.to_int(),
+        input.max_order.to_int(),
+        input.duration_ms.to_int(),
+        speed~,
+        half_width=half.to_int(),
+      )
+    }
+    (Some(dimensions), None, None) => {
+      let room = match point(dimensions) {
+        Err(e) => return Err(e)
+        Ok(v) => v
+      }
+      @core.scene(
+        room,
+        source,
+        receivers,
+        input.absorption,
+        input.sample_rate.to_int(),
+        input.max_order.to_int(),
+        input.duration_ms.to_int(),
+        speed~,
+        half_width=half.to_int(),
+      )
+    }
+    _ =>
+      Err(
+        "specify either room, or footprint and height; do not mix geometry models",
+      )
+  }
 }
 
 ///|
@@ -161,6 +190,27 @@ fn path_json(p : @core.Path) -> Json {
 
 ///|
 fn config(s : @core.Scene) -> Json {
+  if s.floor_plan() is Some(vertices) {
+    return {
+      "geometry": "convex_prism",
+      "footprint": Json(vertices.map(fn(p) { [p.x, p.y] })),
+      "height": Json(s.dimensions().z),
+      "source": vector(s.source_position()),
+      "receivers": Json(s.receiver_positions().map(vector)),
+      "absorption": Json(s.wall_absorption()),
+      "sample_rate": Json(s.rate()),
+      "max_order": Json(s.order()),
+      "speed": Json(s.sound_speed()),
+      "physical_frames": Json(s.physical_frames()),
+      "output_frames": Json(s.output_frames()),
+      "latency_samples": Json(s.latency_samples()),
+      "wall_order": "polygon_edges_then_floor_then_ceiling",
+      "image_semantics": "reflection_words_before_visibility",
+      "path_semantics": "finite_face_hits_excluding_edges_and_corners",
+      "kernel": "normalized_hann_sinc",
+      "sample_unit": "linear_model_amplitude",
+    }
+  }
   {
     "room": vector(s.dimensions()),
     "source": vector(s.source_position()),
@@ -184,6 +234,24 @@ pub fn describe_json(text : String) -> String {
   let s = match parse_scene(text) {
     Err(e) => return error(e)
     Ok(s) => s
+  }
+  if s.floor_plan() is Some(_) {
+    return (
+      {
+        "ok": true,
+        "config": config(s),
+        "images": Json(@core.images(s).map(image_json)),
+        "paths": Json(@core.trace(s).map(path_json)),
+        "specular_paths": Json(
+          @core.trace_prism(s).map(fn(p) {
+            {
+              "path": path_json(p.path),
+              "walls": Json(p.walls),
+              "hits": Json(p.hits.map(vector)),
+            }
+          }),
+        ),
+      } : Json).stringify()
   }
   (
     {
