@@ -212,11 +212,20 @@ pub fn write_float32(
   le(out, frames, 4)
   ascii(out, "data")
   le(out, data_size, 4)
-  for frame = 0; frame < frames; frame = frame + 1 {
-    for channel in channels {
-      let bits = Float::from_double(channel[frame]).reinterpret_as_int()
-      le(out, bits, 4)
-    }
-  }
-  Ok(Bytes::from_array(out))
+  // Allocate the final byte buffer once. A growable Array[Byte] for every
+  // audio byte is much larger on JS and would then be copied to Bytes again.
+  Ok(
+    Bytes::makei(58 + data_size, fn(i) {
+      if i < 58 {
+        out[i]
+      } else {
+        let offset = i - 58
+        let sample = offset / 4
+        let channel = sample % channels.length()
+        let frame = sample / channels.length()
+        let bits = Float::from_double(channels[channel][frame]).reinterpret_as_int()
+        ((bits >> (8 * (offset % 4))) & 255).to_byte()
+      }
+    }),
+  )
 }

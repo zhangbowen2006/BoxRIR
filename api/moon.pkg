@@ -2,4 +2,5 @@ import {
   "zhangbowen2006/boxrir" @core,
   "zhangbowen2006/boxrir/io" @audio,
   "moonbitlang/core/json",
+  "moonbitlang/core/encoding/base64",
 }

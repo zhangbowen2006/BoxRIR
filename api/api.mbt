@@ -271,6 +271,15 @@ fn byte_array(bytes : Bytes) -> Json {
 }
 
 ///|
+fn encode_audio(bytes : Bytes, base64 : Bool) -> Json {
+  if base64 {
+    Json(@base64.encode(bytes))
+  } else {
+    byte_array(bytes)
+  }
+}
+
+///|
 fn peaks(channels : Array[Array[Double]]) -> Json {
   Json(
     channels.map(fn(c) {
@@ -282,8 +291,19 @@ fn peaks(channels : Array[Array[Double]]) -> Json {
 ///|
 /// RIR export and optional source WAV simulation. Empty bytes request RIR only.
 pub fn generate_json(text : String, dry_wav : Bytes) -> String {
+  generate_encoded(text, dry_wav, false)
+}
+
+///|
+/// Compact browser/SDK transport. The original number-array endpoint is kept.
+pub fn generate_base64_json(text : String, dry_wav : Bytes) -> String {
+  generate_encoded(text, dry_wav, true)
+}
+
+///|
+fn generate_encoded(text : String, dry_wav : Bytes, base64 : Bool) -> String {
   if reference_requested(text) {
-    return reference_generate(text, dry_wav)
+    return reference_generate(text, dry_wav, base64)
   }
   let s = match parse_scene(text) {
     Err(e) => return error(e)
@@ -323,7 +343,7 @@ pub fn generate_json(text : String, dry_wav : Bytes) -> String {
         Ok(v) => v
       }
       (
-        byte_array(bytes),
+        encode_audio(bytes, base64),
         {
           "frames": Json(a.frames()),
           "peaks": peaks(c),
@@ -343,6 +363,10 @@ pub fn generate_json(text : String, dry_wav : Bytes) -> String {
     "paths": Json(@core.trace(s).map(path_json)),
   }
   (
-    { "ok": true, "report": report, "rir_wav": byte_array(rir), "wet_wav": wet } :
-    Json).stringify()
+    {
+      "ok": true,
+      "report": report,
+      "rir_wav": encode_audio(rir, base64),
+      "wet_wav": wet,
+    } : Json).stringify()
 }

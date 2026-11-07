@@ -232,7 +232,7 @@ pub fn reference_samples_json(text : String) -> String {
 }
 
 ///|
-fn reference_generate(text : String, dry_wav : Bytes) -> String {
+fn reference_generate(text : String, dry_wav : Bytes, base64 : Bool) -> String {
   let input = match read_reference(text) {
     Ok(v) => v
     Err(e) => return error(e)
@@ -277,7 +277,7 @@ fn reference_generate(text : String, dry_wav : Bytes) -> String {
         Err(e) => return error(e)
       }
       (
-        byte_array(bytes),
+        encode_audio(bytes, base64),
         {
           "frames": Json(audio.frames()),
           "peaks": peaks(output),
@@ -291,6 +291,10 @@ fn reference_generate(text : String, dry_wav : Bytes) -> String {
     fields.set("wet", wet_info)
   }
   (
-    { "ok": true, "report": report, "rir_wav": byte_array(rir), "wet_wav": wet } :
-    Json).stringify()
+    {
+      "ok": true,
+      "report": report,
+      "rir_wav": encode_audio(rir, base64),
+      "wet_wav": wet,
+    } : Json).stringify()
 }

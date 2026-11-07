@@ -11,7 +11,7 @@
 
 name = "zhangbowen2006/boxrir"
 
-version = "0.2.0-dev.20261107"
+version = "0.2.0"
 
 readme = "README.md"
 

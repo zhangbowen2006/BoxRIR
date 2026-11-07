@@ -5,7 +5,7 @@ import fs from 'node:fs';
 test('browser request freezes input, cancels pending file reads and captures the submitted scene',async()=>{
   // Controller-only DOM/Worker doubles. The numeric engine is covered separately.
   const elements=new Map(),workers=[];
-  const element=id=>{if(!elements.has(id))elements.set(id,{id,value:'',files:[],disabled:false,checked:true,textContent:'',classList:{add(){},remove(){},toggle(){}},append(){},replaceChildren(){}});return elements.get(id);};
+  const element=id=>{if(!elements.has(id))elements.set(id,{id,value:'',files:[],disabled:false,checked:true,textContent:'',classList:{add(){},remove(){},toggle(){}},append(){},replaceChildren(){},removeAttribute(){},load(){}});return elements.get(id);};
   element('preset').value='stereo';
   globalThis.document={getElementById:element,createElement:tag=>({tag,append(){}})};
   globalThis.Worker=class{constructor(){this.posts=[];workers.push(this);}terminate(){this.terminated=true;}postMessage(message){this.posts.push(message);}};

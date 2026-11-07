@@ -48,15 +48,34 @@ fn convolve_channels(
   if length > 262144 || length * responses.length() > 2000000 {
     return Err("convolution output budget exceeded")
   }
+  let fft_length = @spectrum.next_power_of_two(length) catch {
+    _ => return Err("FFT length selection failed")
+  }
+  let input = Array::make(fft_length, @spectrum.Complex::zero())
+  for i in 0..<dry.length() {
+    input[i] = @spectrum.complex(re=dry[i], im=0.0)
+  }
+  // One dry spectrum is shared by every receiver. Do not recompute and retain
+  // three separate complex input/product buffers for each channel.
+  let dry_spectrum = @spectrum.fft(input[:]) catch {
+    _ => return Err("FFT source transform failed")
+  }
   let channels : Array[Array[Double]] = []
   for h in responses {
-    let wet = @spectrum.fft_convolve(dry[:], h[:]) catch {
-      _ => return Err("FFT convolution failed")
+    let kernel = Array::make(fft_length, @spectrum.Complex::zero())
+    for i in 0..<h.length() {
+      kernel[i] = @spectrum.complex(re=h[i], im=0.0)
     }
-    if wet.length() != length {
-      return Err("FFT backend returned an unexpected length")
+    let product = @spectrum.fft(kernel[:]) catch {
+      _ => return Err("FFT kernel transform failed")
     }
-    channels.push(wet)
+    for i in 0..<fft_length {
+      product[i] = dry_spectrum[i].mul(product[i])
+    }
+    let time_domain = @spectrum.ifft(product[:]) catch {
+      _ => return Err("FFT inverse transform failed")
+    }
+    channels.push(Array::makei(length, fn(i) { time_domain[i].re }))
   }
   Ok({ samples: channels, sample_rate, latency_samples, })
 }

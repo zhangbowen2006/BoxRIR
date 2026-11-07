@@ -33,3 +33,29 @@ test "FFT output equals independent linear convolution and preserves full tail" 
   assert_true(convolve(r, [1.0e7]) is Err(_))
   assert_true(convolve(r, Array::make(262144, 0.0)) is Err(_))
 }
+
+///|
+test "shared source FFT preserves all receiver channels and signed tails" {
+  let responses = [
+    [0.0, 0.5, -0.25, 0.1, 0.0],
+    [-0.3, 0.0, 0.2, 0.0, -0.4],
+    [0.0, 0.0, 0.0, 0.0, 0.7],
+  ]
+  let dry = Array::makei(131, fn(i) {
+    @math.sin(i.to_double() * 0.19) - 0.3 * @math.cos(i.to_double() * 0.7)
+  })
+  let actual = convolve_channels(responses, 16000, 0, dry).unwrap()
+  assert_eq(actual.frames(), 135)
+  for channel in 0..<responses.length() {
+    let expected = Array::make(135, 0.0)
+    for i in 0..<dry.length() {
+      for j in 0..<responses[channel].length() {
+        expected[i + j] = expected[i + j] + dry[i] * responses[channel][j]
+      }
+    }
+    let samples = actual.channel(channel).unwrap()
+    for i in 0..<expected.length() {
+      assert_true((samples[i] - expected[i]).abs() < 1.0e-10)
+    }
+  }
+}

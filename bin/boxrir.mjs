@@ -1,10 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {describe_json,generate_json} from '../_build/js/release/build/bridge/bridge.js';
+import {createBoxRIR} from '../sdk/client.mjs';
+import {version} from '../sdk/version.mjs';
+import {publishBundle,sha256} from './output.mjs';
 
-const usage='Usage: node bin/boxrir.mjs inspect scene.json | rir scene.json new-directory | simulate scene.json mono.wav new-directory';
-const [command,sceneFile,...args]=process.argv.slice(2);
-function read(file,max){const stat=fs.statSync(file);if(!stat.isFile()||stat.size>max)throw new Error(`Input exceeds ${max} bytes or is not a file: ${file}`);return fs.readFileSync(file);}
+const usage='Usage: node bin/boxrir.mjs [--backend js|wasm-gc] inspect scene.json | rir scene.json new-directory | simulate scene.json mono.wav new-directory';
+const argv=process.argv.slice(2);
+let backend='js';
+if(argv[0]==='--backend'){argv.shift();backend=argv.shift();}
+const [command,sceneFile,...args]=argv;
+function read(file,max){
+  const fd=fs.openSync(file,'r');
+  try {
+    const stat=fs.fstatSync(fd);if(!stat.isFile()||stat.size>max)throw new Error(`Input exceeds ${max} bytes or is not a file: ${file}`);
+    // Read at most max+1 even if another process grows the file after stat.
+    const bytes=Buffer.alloc(max+1);let offset=0,count;
+    while(offset<bytes.length && (count=fs.readSync(fd,bytes,offset,bytes.length-offset,null))>0)offset+=count;
+    if(offset>max)throw Error(`Input exceeds ${max} bytes: ${file}`);
+    return bytes.subarray(0,offset);
+  } finally {fs.closeSync(fd);}
+}
 function waveform(wav,report){
   const rate=report.config.sample_rate,channels=report.config.receivers.length,frames=(wav.length-58)/(4*channels);
   const width=960,height=80+channels*120,palette=['#0f766e','#2563eb','#c2410c','#7c3aed'];
@@ -22,26 +37,29 @@ function waveform(wav,report){
   return svg+'</g></svg>';
 }
 try{
+  if(command==='--help' && !sceneFile){console.log(usage);process.exit(0);}
+  if(command==='--version' && !sceneFile){console.log(version);process.exit(0);}
   if(!sceneFile||!['inspect','rir','simulate'].includes(command)||(command==='inspect'&&args.length!==0)||(command==='rir'&&args.length!==1)||(command==='simulate'&&args.length!==2))throw new Error(usage);
-  const scene=read(sceneFile,262144).toString('utf8');
+  const directory=command==='inspect'?null:path.resolve(args.at(-1));
+  if(directory && fs.existsSync(directory))throw new Error('Output directory already exists: '+directory);
+  const sceneBytes=read(sceneFile,262144),scene=new TextDecoder('utf-8',{fatal:true}).decode(sceneBytes);
+  const bundled=new URL('../sdk/bridge.js',import.meta.url);
+  const jsModuleURL=fs.existsSync(bundled)?bundled:new URL('../_build/js/release/build/bridge/bridge.js',import.meta.url);
+  const wasmURL=fs.existsSync(new URL('../sdk/boxrir.wasm',import.meta.url))?new URL('../sdk/boxrir.wasm',import.meta.url):new URL('../_build/wasm-gc/release/build/bridge/bridge.wasm',import.meta.url);
+  const engineFile=backend==='wasm-gc'?wasmURL:jsModuleURL;
+  const engine=await createBoxRIR({backend,jsModuleURL,...(backend==='wasm-gc'?{wasmBytes:fs.readFileSync(wasmURL)}:{})});
   if(command==='inspect'){
-    const result=JSON.parse(describe_json(scene));if(!result.ok)throw new Error(result.error);
-    console.log(JSON.stringify(result,null,2));
+    console.log(JSON.stringify(engine.inspect(scene),null,2));
   }else{
     const dry=command==='simulate'?read(args[0],4194304):new Uint8Array();
     if(command==='simulate'&&dry.length===0)throw new Error('Source WAV file is empty');
-    const result=JSON.parse(generate_json(scene,dry));if(!result.ok)throw new Error(result.error);
-    const directory=path.resolve(args.at(-1));
-    if(fs.existsSync(directory))throw new Error('Output directory already exists: '+directory);
-    const report=result.report,rir=Buffer.from(result.rir_wav);
+    const result=engine.render(scene,{dryWav:dry});
+    const report=result.report,rir=Buffer.from(result.rirWav);
     const walls=report.config.geometry==='convex_prism'?[...report.config.footprint.map((_,i)=>`edge_${i}`),'floor','ceiling']:['x_low','x_high','y_low','y_high','z_low','z_high'];
     const csv=[['receiver','order','distance_m','arrival_sample','gain',...walls].join(','),...report.paths.map(p=>[p.receiver,p.order,p.distance,p.delay_samples,p.gain,...p.bounces].join(','))].join('\n')+'\n';
-    const files=[['rir.wav',rir],['report.json',JSON.stringify(report,null,2)+'\n'],['paths.csv',csv],['response.svg',waveform(rir,report)]];
-    if(result.wet_wav!==null)files.push(['wet.wav',Buffer.from(result.wet_wav)]);
-    fs.mkdirSync(path.dirname(directory),{recursive:true});fs.mkdirSync(directory);
-    const marker=path.join(directory,'.boxrir-incomplete');fs.writeFileSync(marker,'Output is incomplete until this marker is removed.\n',{flag:'wx'});
-    for(const [name,data] of files)fs.writeFileSync(path.join(directory,name),data,{flag:'wx'});
-    fs.unlinkSync(marker);
-    console.log(JSON.stringify({directory,channels:report.config.receivers.length,frames:report.config.output_frames,latency_samples:report.config.latency_samples,contributing_paths:report.contributing_paths,omitted_late_paths:report.omitted_late_paths,paths_exported:report.paths.length,paths_truncated:report.paths_truncated||false,wet:report.wet}));
+    const files=[['scene.json',sceneBytes],['rir.wav',rir],['report.json',JSON.stringify(report,null,2)+'\n'],['paths.csv',csv],['response.svg',waveform(rir,report)]];
+    if(result.wetWav!==null)files.push(['wet.wav',Buffer.from(result.wetWav)],['source.wav',dry]);
+    publishBundle(directory,files,{version,backend,engine_sha256:sha256(fs.readFileSync(engineFile)),inputs:{scene_sha256:sha256(sceneBytes),source_sha256:dry.length?sha256(dry):null}});
+    console.log(JSON.stringify({directory,version,backend,channels:report.config.receivers.length,frames:report.config.output_frames,latency_samples:report.config.latency_samples,contributing_paths:report.contributing_paths,omitted_late_paths:report.omitted_late_paths,paths_exported:report.paths.length,paths_truncated:report.paths_truncated||false,wet:report.wet}));
   }
 }catch(e){console.error(e.message);process.exitCode=2;}

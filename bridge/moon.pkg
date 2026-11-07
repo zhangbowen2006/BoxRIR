@@ -1,11 +1,15 @@
 import {
   "zhangbowen2006/boxrir/api",
+  "moonbitlang/core/encoding/base64",
 }
 
 pkgtype(kind: "foreign_library")
 
-supported_targets = "js"
+supported_targets = "+js+wasm-gc"
 
 options(
-  link: { "js": { "format": "esm" } },
+  link: {
+    "js": { "format": "esm" },
+    "wasm-gc": { "use-js-builtin-string": true },
+  },
 )

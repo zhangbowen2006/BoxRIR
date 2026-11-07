@@ -10,16 +10,19 @@ parameter handling are ported from audiolabs/rir-generator v0.3.0, commit
 052790faade19074c6921e007fb8972c60e8f0a6. They are not wholly original algorithms.
 Core Copyright (C) 2003-2020 E.A.P. Habets; wrapper Copyright (c) 2020-2025
 Nils Werner, Emanuël Habets. Both upstream MIT license texts are retained in
-docs/licenses/audiolabs-rir-generator-MIT.txt and docs/licenses/rir-generator.txt.
+docs/licenses/audiolabs-rir-generator-MIT.txt and docs/licenses/rir-generator.txt
+(licenses/ in standalone runtime and browser bundles).
 The original BoxRIR renderer and convex-prism extension remain separate modes;
 their interpolation and timing conventions are not represented as equivalent.
 
 Runtime package dependencies:
-chgttyyr/MoonSpectrum 0.2.2 - Apache-2.0 (FFT convolution).
+chgttyyr/MoonSpectrum 0.2.2 - Apache-2.0 (FFT/IFFT; BoxRIR shares the dry FFT
+across receivers and implements the multichannel convolution orchestration).
 Ridge-Lab/moonwavkit 0.1.3 - MIT (WAV input decoding).
 moonbitlang/x 0.4.45 - Apache-2.0 (declared transitive dependency).
 MoonBit core - Apache-2.0.
 
-Full direct-dependency and reference license texts are in docs/licenses/.
+Full direct-dependency and reference license texts are in docs/licenses/
+(licenses/ in compiled distribution bundles).
 Upstream copyrights and terms remain applicable; dependency functionality
 is not represented as newly developed by BoxRIR.

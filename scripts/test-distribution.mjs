@@ -1,0 +1,30 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';
+import {root} from './build-support.mjs';
+const original=path.join(root,'_build/distribution');
+const parent=path.join(root,'generated/consumer-tests');fs.mkdirSync(parent,{recursive:true});
+const destination=fs.mkdtempSync(path.join(parent,'standalone-'));
+fs.cpSync(original,destination,{recursive:true});
+const sums=JSON.parse(fs.readFileSync(path.join(destination,'SHA256SUMS.json')));
+for(const [file,expected] of Object.entries(sums))assert.equal(createHash('sha256').update(fs.readFileSync(path.join(destination,file))).digest('hex'),expected,file);
+for(const name of ['MoonBit-core.txt','MoonSpectrum.txt','MoonWavKit.txt','rir-generator.txt','audiolabs-rir-generator-MIT.txt'])assert.ok(fs.statSync(path.join(destination,'licenses',name)).size>100);
+const {createBoxRIR}=await import(pathToFileURL(path.join(destination,'sdk/client.mjs')));
+const result=[];
+for(const backend of ['js','wasm-gc']){
+  const engine=await createBoxRIR({backend,...(backend==='wasm-gc'?{wasmBytes:fs.readFileSync(path.join(destination,'sdk/boxrir.wasm'))}:{})});
+  const scene=fs.readFileSync(path.join(destination,'examples/reference-cardioid.json'),'utf8');
+  const audio=engine.render(scene,{dryWav:fs.readFileSync(path.join(destination,'examples/probe.wav'))});
+  assert.equal(audio.report.config.output_frames,2048);assert.equal(audio.report.wet.frames,18047);
+  const cli=spawnSync(process.execPath,['bin/boxrir.mjs','--backend',backend,'simulate','examples/triangle.json','examples/probe.wav','output-'+backend],{cwd:destination,encoding:'utf8',env:{...process.env,MOON_HOME:'',MOON_PATH:'',PATH:path.dirname(process.execPath)}});
+  assert.equal(cli.status,0,cli.stderr);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(destination,'output-'+backend,'run-manifest.json'))).backend,backend);
+  result.push({backend,sdk:true,cli:true,moonbit_python_and_native_compiler_not_required:true});
+}
+const evidence={version:JSON.parse(fs.readFileSync(path.join(destination,'package.json'))).version,packaged_files:Object.keys(sums).length,sha256_verified:true,checks:result};
+fs.mkdirSync(path.join(root,'generated/distribution-verification'),{recursive:true});
+fs.writeFileSync(path.join(root,'generated/distribution-verification/result.json'),JSON.stringify(evidence,null,2)+'\n');
+console.log(JSON.stringify(evidence));
