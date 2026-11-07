@@ -5,14 +5,17 @@ import {describe_json, generate_json} from '../_build/js/release/build/bridge/br
 const fixture = JSON.parse(fs.readFileSync(new URL('./reference/prism-pyroomacoustics-0.10.1.json', import.meta.url)));
 const distance = (a,b) => Math.hypot(...a.map((x,i)=>x-b[i]));
 
-test('convex prism paths match independent finite-wall visibility across 16 upstream scenes', () => {
+test(`convex prism paths match independent finite-wall visibility across ${fixture.cases.length} upstream scenes`, () => {
   for (const c of fixture.cases) {
     const result = JSON.parse(describe_json(JSON.stringify(c.scene)));
     assert.equal(result.ok, true, result.error);
     assert.equal(result.paths.length, c.expected_paths.length, c.name);
     const used = new Set();
     for (const path of result.paths) {
-      const index = c.expected_paths.findIndex((expected,i) => !used.has(i) && expected.receiver === path.receiver && expected.order === path.order && distance(expected.image,path.image) < 4e-5);
+      // Upstream stores successive plane reflections in Float32. At order 4,
+      // analytic rectangle x=-22.63 becomes -22.629959106445312 upstream.
+      // The MoonBit rectangle/closed-form test separately requires 1e-8 m.
+      const index = c.expected_paths.findIndex((expected,i) => !used.has(i) && expected.receiver === path.receiver && expected.order === path.order && distance(expected.image,path.image) < 5e-5);
       assert.ok(index >= 0, `${c.name}: unmatched path ${JSON.stringify(path)}`);
       used.add(index);
       assert.ok(Math.abs(path.reflection-c.expected_paths[index].reflection) < 3e-6);

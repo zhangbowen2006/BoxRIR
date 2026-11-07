@@ -58,9 +58,31 @@ add('small-window-clipped-kernel', room=[4, 4, 3], source=[1, 1, 1], receivers=[
 add('outside-short-window', nsample=1, max_order=0)
 add('wall-pairs', beta=[[.9, .8], [.7, .6], [.5, .4]], max_order=2)
 
+# Independent, predeclared seeded inputs. Expected samples come only from the
+# unmodified C++ binary; no scene is filtered using our implementation's result.
+random_seed = 20261107
+rng = np.random.default_rng(random_seed)
+for index in range(64):
+    room = rng.uniform(.6, 8.0, size=3)
+    source = room * rng.uniform(.3, .7, size=3)
+    receivers = []
+    for channel in range(1 + index % 3):
+        direction = rng.normal(size=3)
+        direction /= np.linalg.norm(direction)
+        receivers.append((source + direction * rng.uniform(.02, .12)).tolist())
+    add(f'seeded-{index:02d}', room=room.tolist(), source=source.tolist(), receivers=receivers,
+        sample_rate=[8000, 16000, 22050, 44100, 48000, 96000][index % 6],
+        nsample=[512, 768, 1024][index % 3], speed=float(rng.uniform(300, 355)),
+        beta=rng.uniform(-.98, .98, size=6).tolist(),
+        microphone=['o', 'b', 'c', 's', 'h'][index % 5],
+        dimension=2 if index % 4 == 0 else 3, high_pass=index % 2 == 0,
+        orientation=[float(rng.uniform(-np.pi, np.pi)), float(rng.uniform(-np.pi / 2, np.pi / 2))],
+        max_order=[-1, 0, 1, 2, 3, 5, 8, 12][index % 8])
+
 report = dict(reference='audiolabs/rir-generator', version=rir.__version__,
               upstream_tag='v0.3.0', upstream_commit='052790faade19074c6921e007fb8972c60e8f0a6',
-              numpy=np.__version__, comparison='all samples, no alignment, normalization or correlation fit', cases=cases)
+              numpy=np.__version__, random_seed=random_seed,
+              comparison='all samples, no alignment, normalization or correlation fit', cases=cases)
 target = Path(__file__).with_name('audiolabs-0.3.0.json')
 target.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8', newline='\n')
 embedded = Path(__file__).resolve().parents[2] / 'cmd' / 'reference-parity' / 'fixtures.mbt'

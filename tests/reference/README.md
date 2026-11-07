@@ -3,10 +3,12 @@
 ## AudioLabs waveform reference (2026-11-07)
 
 `generate_audiolabs.py` uses the unmodified rir-generator 0.3.0 binary to record
-39 complete Float64 waveforms, 47,098 samples, with per-case SHA256. It covers
-all five microphone patterns, 2D/3D wall reflection semantics, high-pass on/off,
+103 complete Float64 waveforms, 155,130 samples, with per-case SHA256. It covers
+39 named boundary/baseline cases plus 64 predeclared random scenes (NumPy seed
+20261107, no filtering using the port's results). It covers all five microphone
+patterns, 2D/3D wall reflection semantics, high-pass on/off,
 finite/window-limited order, signed/zero/lossless pressure coefficients, T60 and
-automatic output lengths, and 8/11.025/16/48/96kHz. No alignment or normalization
+automatic output lengths, and 8/11.025/16/22.05/44.1/48/96kHz. No alignment or normalization
 is applied. `audiolabs-0.3.0.json` is canonical; the generated
 `cmd/reference-parity/fixtures.mbt` embeds the same data for portable backend
 checks and is not implementation LOC. Source commit/hash manifest and both MIT
@@ -16,10 +18,14 @@ notices are retained. `audiolabs.mbt` is a source port, not merely a reference.
 
 `generate_prism.py` uses pyroomacoustics 0.10.1 Room.from_corners/extrude,
 image_source_model and per-microphone visibility. It does not implement the
-MoonBit reflection/backtrace equations. The pinned output contains 16 scenes
-(rectangle, triangle, trapezoid, pentagon; orders 0..3), 718 visible paths.
+MoonBit reflection/backtrace equations. The pinned output contains 20 scenes
+(rectangle, triangle, trapezoid, pentagon; orders 0..4), 1,687 visible paths.
 `tests/prism.test.mjs` checks counts, receiver/order, image coordinates within
-4e-5 m and pressure reflections within 3e-6. Different FIR kernels mean this is
+5e-5 m and pressure reflections within 3e-6. The fourth-order analytic rectangle
+image x=-22.63 is -22.629959106445312 in upstream Float32 geometry (4.09e-5m
+error). A separate MoonBit rectangle/closed-form comparison still requires
+1e-8m at every supported order, and hit/length/reflection-law checks use 1e-8.
+Different FIR kernels mean this is
 not an upstream waveform comparison. These remain synthetic development cases.
 
 These are synthetic development fixtures, not measured rooms or claimed user deployments. They do not require Python at production runtime.

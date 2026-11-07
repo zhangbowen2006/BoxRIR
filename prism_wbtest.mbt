@@ -54,7 +54,7 @@ test "convex geometry rejects concavity, clockwise, repeated vertices and outsid
 ///|
 test "rectangle prism validates exactly the same physical paths as the closed form" {
   let vertices = rectangle_for_test()
-  for order in 0..<4 {
+  for order in 0..<5 {
     let prism = prism_for_test(vertices, order).unwrap()
     let box = scene(
       prism.room,
@@ -91,7 +91,7 @@ test "trapezoid hits obey finite faces, reflection law and unfolded path length"
     { x: 5.0, y: 4.0, },
     { x: 0.0, y: 4.0, },
   ]
-  let s = prism_for_test(vertices, 3).unwrap()
+  let s = prism_for_test(vertices, 4).unwrap()
   let paths = trace_prism(s)
   assert_true(paths.length() > 20)
   assert_true(paths.length() < images(s).length())

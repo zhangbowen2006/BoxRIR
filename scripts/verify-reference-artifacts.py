@@ -4,6 +4,7 @@ Run with the isolated Python containing rir-generator 0.3.0, NumPy and SciPy.
 No alignment, normalization or fitted gains are applied.
 """
 import json
+import argparse
 from pathlib import Path
 import numpy as np
 import rir_generator as rir
@@ -12,10 +13,13 @@ from scipy.signal import fftconvolve
 
 assert rir.__version__ == '0.3.0'
 root = Path(__file__).resolve().parent.parent
+parser = argparse.ArgumentParser()
+parser.add_argument('--directory', type=Path, default=root / 'generated/reference-workflows')
+output = parser.parse_args().directory
 records = []
 for name in ('reference-omni', 'reference-cardioid', 'reference-2d'):
     scene = json.loads((root / 'examples' / (name + '.json')).read_text())
-    folder = root / 'generated' / 'reference-workflows' / name
+    folder = output / name
     report = json.loads((folder / 'report.json').read_text())
     parameters = dict(c=scene['speed'], fs=scene['sample_rate'], r=scene['receivers'],
                       s=scene['source'], L=scene['room'], nsample=scene['nsample'],
@@ -47,5 +51,5 @@ for name in ('reference-omni', 'reference-cardioid', 'reference-2d'):
                         wet_frames=len(wet), maximum_rir_error=rir_error,
                         maximum_wet_errors=wet_errors, paths_truncated=report['paths_truncated']))
 result = dict(reference='unmodified rir-generator 0.3.0 binary', comparison='same sample indices; no normalization, alignment or fitted gain', cases=records)
-(root / 'generated' / 'reference-workflows' / 'verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+(output / 'verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
 print(json.dumps(result))

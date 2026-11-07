@@ -1,5 +1,6 @@
 """Read actual CLI-produced WAV/CSV files and check convolution using SciPy."""
 import csv
+import argparse
 import json
 from pathlib import Path
 import numpy as np
@@ -7,9 +8,12 @@ from scipy.io import wavfile
 from scipy.signal import fftconvolve
 
 root = Path(__file__).resolve().parent.parent
+parser = argparse.ArgumentParser()
+parser.add_argument('--directory', type=Path, default=root / 'generated/prism-workflows')
+output = parser.parse_args().directory
 records = []
 for name in ('triangle', 'trapezoid', 'pentagon'):
-    folder = root / 'generated' / 'prism-workflows' / name
+    folder = output / name
     report = json.loads((folder / 'report.json').read_text())
     rate, rir = wavfile.read(folder / 'rir.wav')
     wet_rate, wet = wavfile.read(folder / 'wet.wav')
@@ -31,6 +35,6 @@ for name in ('triangle', 'trapezoid', 'pentagon'):
     assert all(None not in row for row in rows)
     records.append({'scene': name, 'paths': len(rows), 'rir_frames': len(rir), 'wet_frames': len(wet), 'channels': rir.shape[1], 'maximum_convolution_errors': errors})
 result = {'scope': 'synthetic local workflows, not field measurements', 'cases': records}
-target = root / 'generated' / 'prism-workflows' / 'verification.json'
+target = output / 'verification.json'
 target.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
 print(json.dumps(result))

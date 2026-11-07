@@ -17,7 +17,7 @@ shapes = [
 ]
 cases = []
 for name, vertices in shapes:
-    for order in range(4):
+    for order in range(5):
         wall_count = len(vertices)
         absorption = [0.11 + 0.07 * i for i in range(wall_count + 2)]
         corners = np.asarray(vertices, dtype=float).T
