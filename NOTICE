@@ -5,6 +5,15 @@ Model conventions were checked against pyroomacoustics (MIT) and AudioLabs
 rir-generator (MIT). pyroomacoustics 0.10.1 is used only for independent
 development fixtures. No Python/C++ simulation service is used at runtime.
 
+The audiolabs.mbt numerical compatibility kernel and its default-length/RT60
+parameter handling are ported from audiolabs/rir-generator v0.3.0, commit
+052790faade19074c6921e007fb8972c60e8f0a6. They are not wholly original algorithms.
+Core Copyright (C) 2003-2020 E.A.P. Habets; wrapper Copyright (c) 2020-2025
+Nils Werner, Emanuël Habets. Both upstream MIT license texts are retained in
+docs/licenses/audiolabs-rir-generator-MIT.txt and docs/licenses/rir-generator.txt.
+The original BoxRIR renderer and convex-prism extension remain separate modes;
+their interpolation and timing conventions are not represented as equivalent.
+
 Runtime package dependencies:
 chgttyyr/MoonSpectrum 0.2.2 - Apache-2.0 (FFT convolution).
 Ridge-Lab/moonwavkit 0.1.3 - MIT (WAV input decoding).

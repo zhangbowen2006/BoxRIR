@@ -11,7 +11,7 @@
 
 name = "zhangbowen2006/boxrir"
 
-version = "0.1.1"
+version = "0.2.0-dev.20261107"
 
 readme = "README.md"
 
@@ -23,7 +23,7 @@ keywords = [ "acoustics", "image-source", "rir", "simulation" ]
 
 preferred_target = "wasm"
 
-description = "Finite-order shoebox propagation, multichannel room impulse responses and recording simulation in MoonBit"
+description = "MoonBit shoebox and convex-prism RIR simulation with a bounded AudioLabs-compatible numerical profile"
 
 import {
   "chgttyyr/MoonSpectrum@0.2.2",

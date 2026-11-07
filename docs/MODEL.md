@@ -1,5 +1,11 @@
 # Model contract
 
+This document describes the original BoxRIR renderer. The convex-prism extension
+is documented in LOCAL-20261105.md. The separately selected AudioLabs numerical
+profile has different pressure coefficients, interpolation and time-window
+semantics; see AUDIOLABS-COMPATIBILITY.md. Do not transfer normalization or
+latency assumptions between the modes.
+
 The first release implements an omnidirectional point source and 1..8 point
 receivers strictly inside a 3D rectangular room, constant sound speed,
 frequency-independent energy absorption on six specular walls, and finite

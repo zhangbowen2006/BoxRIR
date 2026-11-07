@@ -1,0 +1,21 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "zhangbowen2006/boxrir/cmd/reference-parity"
+
+import {
+  "moonbitlang/core/json",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+type FixtureCase derive(@json.FromJson)
+
+type Fixtures derive(@json.FromJson)
+
+type Samples derive(@json.FromJson)
+
+// Type aliases
+
+// Traits

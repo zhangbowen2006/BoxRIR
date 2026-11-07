@@ -15,7 +15,8 @@ jobs:
           python-version: '3.12'
       - name: Install official MoonBit
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh -o /tmp/install-moon.sh
+          bash /tmp/install-moon.sh '0.10.17+093cb8f9c'
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - name: Check and test four targets
         run: |
@@ -26,6 +27,7 @@ jobs:
           moon build --target all --deny-warn
           moon test --target all --deny-warn
           moon run cmd/main
+          for target in wasm wasm-gc js native; do moon run cmd/reference-parity --target "$target" --deny-warn; done
           moon info
           git diff --exit-code -- '*.mbti'
       - name: Differential and workflow tests
@@ -34,10 +36,12 @@ jobs:
           node --test tests/*.test.mjs
           for name in stereo wall-before wall-after; do node bin/boxrir.mjs rir examples/$name.json _build/verification/$name; done
           node bin/boxrir.mjs simulate examples/array.json examples/probe.wav _build/verification/array
-          python -m pip install numpy==2.5.4 scipy==1.18.1
+          python -m pip install numpy==2.5.4 scipy==1.18.1 rir-generator==0.3.0
           python scripts/verify_artifacts.py --directory _build/verification
           for name in triangle trapezoid pentagon; do node bin/boxrir.mjs simulate examples/$name.json examples/probe.wav generated/prism-workflows/$name; done
           python scripts/verify-prism-artifacts.py
+          for name in reference-omni reference-cardioid reference-2d; do node bin/boxrir.mjs simulate examples/$name.json examples/probe.wav generated/reference-workflows/$name; done
+          python scripts/verify-reference-artifacts.py
           node scripts/build-demo.mjs
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

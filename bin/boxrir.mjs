@@ -42,6 +42,6 @@ try{
     const marker=path.join(directory,'.boxrir-incomplete');fs.writeFileSync(marker,'Output is incomplete until this marker is removed.\n',{flag:'wx'});
     for(const [name,data] of files)fs.writeFileSync(path.join(directory,name),data,{flag:'wx'});
     fs.unlinkSync(marker);
-    console.log(JSON.stringify({directory,channels:report.config.receivers.length,frames:report.config.output_frames,latency_samples:report.config.latency_samples,contributing_paths:report.contributing_paths,omitted_late_paths:report.omitted_late_paths,wet:report.wet}));
+    console.log(JSON.stringify({directory,channels:report.config.receivers.length,frames:report.config.output_frames,latency_samples:report.config.latency_samples,contributing_paths:report.contributing_paths,omitted_late_paths:report.omitted_late_paths,paths_exported:report.paths.length,paths_truncated:report.paths_truncated||false,wet:report.wet}));
   }
 }catch(e){console.error(e.message);process.exitCode=2;}

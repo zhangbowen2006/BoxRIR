@@ -22,7 +22,7 @@ try {
   await page.goto(process.env.BASE_URL||'http://127.0.0.1:4177');
   await page.locator('#run').waitFor({state:'visible'});
   await page.waitForFunction(()=>!document.querySelector('#run').disabled);
-  for(const name of ['triangle','trapezoid','pentagon']) {
+  for(const name of ['triangle','trapezoid','pentagon','reference-omni','reference-cardioid','reference-2d']) {
     await page.locator('#preset').selectOption(name);
     await page.locator('#run').click();
     await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('计算完成'));
@@ -36,8 +36,11 @@ try {
     const file=`generated/prism-browser/${name}.json`;
     await download.saveAs(file);
     const report=JSON.parse(await fs.readFile(file));
-    const cli=JSON.parse(await fs.readFile(`generated/prism-workflows/${name}/report.json`));
+    const directory=name.startsWith('reference-')?'reference-workflows':'prism-workflows';
+    const cli=JSON.parse(await fs.readFile(`generated/${directory}/${name}/report.json`));
     compare(report,cli);
+    if(name.startsWith('reference-')) assert.equal(report.config.latency_samples,0);
+    if(name==='reference-omni') assert.match(await page.locator('#status').innerText(),/路径明细已达/);
     checks.push({name,channels:2,contributing_paths:report.contributing_paths,download_agrees_with_cli_within_double_tolerance:true});
   }
   await page.screenshot({path:'generated/prism-browser/workbench.png',fullPage:true});

@@ -1,5 +1,17 @@
 # Independent image-source fixtures
 
+## AudioLabs waveform reference (2026-11-07)
+
+`generate_audiolabs.py` uses the unmodified rir-generator 0.3.0 binary to record
+39 complete Float64 waveforms, 47,098 samples, with per-case SHA256. It covers
+all five microphone patterns, 2D/3D wall reflection semantics, high-pass on/off,
+finite/window-limited order, signed/zero/lossless pressure coefficients, T60 and
+automatic output lengths, and 8/11.025/16/48/96kHz. No alignment or normalization
+is applied. `audiolabs-0.3.0.json` is canonical; the generated
+`cmd/reference-parity/fixtures.mbt` embeds the same data for portable backend
+checks and is not implementation LOC. Source commit/hash manifest and both MIT
+notices are retained. `audiolabs.mbt` is a source port, not merely a reference.
+
 ## Local convex-prism extension (2026-11-05)
 
 `generate_prism.py` uses pyroomacoustics 0.10.1 Room.from_corners/extrude,

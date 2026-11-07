@@ -2,6 +2,8 @@
 package "zhangbowen2006/boxrir"
 
 // Values
+pub fn audiolabs_rir(Vec3, Vec3, Array[Vec3], Int32, speed? : Double, beta? : Array[Double]?, reverberation_time? : Double?, nsample? : Int32?, order? : Int32, dimension? : Int32, microphone? : String, orientation? : Array[Double], high_pass? : Bool) -> Result[ReferenceRir, String]
+
 pub fn convolve(Response, Array[Double]) -> Result[Audio, String]
 
 pub fn images(Scene) -> Array[ImageSource]
@@ -26,6 +28,7 @@ pub struct Audio {
 }
 pub fn Audio::channel(Self, Int32) -> Result[Array[Double], String]
 pub fn Audio::channel_count(Self) -> Int32
+pub fn Audio::convolve(Self, Array[Double]) -> Result[Self, String]
 pub fn Audio::frames(Self) -> Int32
 
 pub struct ImageSource {
@@ -49,6 +52,24 @@ pub struct Path {
 pub(all) struct Point2 {
   x : Double
   y : Double
+}
+
+pub struct ReferenceRir {
+  audio : Audio
+  beta : Array[Double]
+  reverberation_time : Double?
+  microphone : String
+  orientation : Array[Double]
+  dimension : Int32
+  high_pass : Bool
+  kernel_frames : Int32
+  evaluated_candidates : Int32
+  contributing : Array[Int32]
+  late : Array[Int32]
+  zero : Array[Int32]
+  paths : Array[Path]
+  direct_paths : Array[Path]
+  paths_truncated : Bool
 }
 
 pub struct Response {

@@ -231,6 +231,9 @@ fn config(s : @core.Scene) -> Json {
 ///|
 /// Geometry-only inspection useful for independent model comparisons.
 pub fn describe_json(text : String) -> String {
+  if reference_requested(text) {
+    return reference_description(text)
+  }
   let s = match parse_scene(text) {
     Err(e) => return error(e)
     Ok(s) => s
@@ -279,6 +282,9 @@ fn peaks(channels : Array[Array[Double]]) -> Json {
 ///|
 /// RIR export and optional source WAV simulation. Empty bytes request RIR only.
 pub fn generate_json(text : String, dry_wav : Bytes) -> String {
+  if reference_requested(text) {
+    return reference_generate(text, dry_wav)
+  }
   let s = match parse_scene(text) {
     Err(e) => return error(e)
     Ok(s) => s

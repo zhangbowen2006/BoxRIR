@@ -26,13 +26,13 @@ function finish(result){
   const r=result.report,c=r.config;drawRoom(c);$('channels').textContent=c.receivers.length;$('images').textContent=r.geometric_images;$('latency').textContent=`${(1000*c.latency_samples/c.sample_rate).toFixed(2)} ms`;
   $('dry-player').src=dryURL;audition();
   $('paths').replaceChildren();for(let i=0;i<c.receivers.length;i++){
-    const direct=r.paths.find(p=>p.receiver===i&&p.order===0),tr=document.createElement('tr');
+    const direct=(r.direct_paths||r.paths).find(p=>p.receiver===i&&p.order===0),tr=document.createElement('tr');
     for(const value of [`M${i}`,`${(direct.delay_samples/c.sample_rate*1000).toFixed(3)} ms`,r.contributing_paths[i],r.omitted_late_paths[i]]){const td=document.createElement('td');td.textContent=value;tr.append(td);}$('paths').append(tr);
   }
   $('downloads').replaceChildren();for(const [name,data,type] of [['rir.wav',new Uint8Array(result.rir_wav),'audio/wav'],['wet.wav',new Uint8Array(result.wet_wav),'audio/wav'],['report.json',JSON.stringify(r,null,2),'application/json'],['scene.json',submittedScene,'application/json']]){
     const a=document.createElement('a');a.className='download';a.textContent=name;a.download=name;a.href=blobURL(data,type);$('downloads').append(a);
   }
-  status(`计算完成：${c.output_frames} 帧响应，${r.wet.frames} 帧模拟录音。时间窗之外的路径计数见上表。`);
+  status(`计算完成：${c.output_frames} 帧响应，${r.wet.frames} 帧模拟录音。时间窗之外的路径计数见上表。${r.paths_truncated?' 路径明细已达 10000 条上限；波形仍包含全部已计算贡献。':''}`);
 }
 $('preset').onchange=()=>{$('scene').value=JSON.stringify(presets[$('preset').value],null,2);drawRoom(presets[$('preset').value]);};
 $('listen-gain').onchange=audition;
@@ -51,7 +51,7 @@ $('run').onclick=async()=>{
   }catch(e){if(request===requestSerial){busy(false);status(e.message,true);}}
 };
 try{
-  const names=['stereo','wall-before','wall-after','array','triangle','trapezoid','pentagon'];
+  const names=['stereo','wall-before','wall-after','array','triangle','trapezoid','pentagon','reference-omni','reference-cardioid','reference-2d'];
   const responses=await Promise.all(names.map(n=>fetch(`examples/${n}.json`).then(r=>{if(!r.ok)throw Error('示例加载失败');return r.json()})));
   names.forEach((n,i)=>presets[n]=responses[i]);probe=await fetch('examples/probe.wav').then(r=>r.arrayBuffer());
   resetWorker();$('preset').onchange();busy(false);status('已就绪。计算在本浏览器内运行。');

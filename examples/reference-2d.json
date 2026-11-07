@@ -1,0 +1,15 @@
+{
+  "model": "audiolabs_v030",
+  "room": [6,4,3],
+  "source": [1.37,1.21,1.13],
+  "receivers": [[3.82,2.31,1.74],[2.43,1.57,1.42]],
+  "sample_rate": 16000,
+  "speed": 343,
+  "beta": [0.9,0.8,0.7,0.6,0.5,0.4],
+  "nsample": 2048,
+  "max_order": 4,
+  "dimension": 2,
+  "microphone": "bidirectional",
+  "orientation": [0.6,0.1],
+  "high_pass": false
+}

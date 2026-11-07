@@ -12,6 +12,8 @@ pub fn generate_json(String, Bytes) -> String
 
 pub fn parse_scene(String) -> Result[@boxrir.Scene, String]
 
+pub fn reference_samples_json(String) -> String
+
 // Errors
 
 // Types and methods

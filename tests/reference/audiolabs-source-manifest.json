@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/audiolabs/rir-generator",
+  "tag": "v0.3.0",
+  "commit": "052790faade19074c6921e007fb8972c60e8f0a6",
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha256": "78e248f27be442594b4b0b98ab15c529d23f1b2411fdbe820d1869f6da535c52"
+    },
+    {
+      "path": "src/rir_generator/__init__.py",
+      "sha256": "c4569f4d02ad5818d4c01e99a31ce88c910f5d5866c382219fd2e7bc00e31490"
+    },
+    {
+      "path": "src/rir_generator/_cffi/rir_generator_core.cpp",
+      "sha256": "bb2f082b118245bdaf817495d7ba429b532e0d9da06f8df2f5c91d4514eb6c0e"
+    }
+  ]
+}
