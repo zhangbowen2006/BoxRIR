@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -32,17 +32,44 @@ jobs:
           git diff --exit-code -- '*.mbti'
       - name: Differential and workflow tests
         run: |
-          moon build --target js --release --deny-warn
+          node scripts/build-sdk.mjs
           node --test tests/*.test.mjs
           for name in stereo wall-before wall-after; do node bin/boxrir.mjs rir examples/$name.json _build/verification/$name; done
           node bin/boxrir.mjs simulate examples/array.json examples/probe.wav _build/verification/array
-          python -m pip install numpy==2.5.4 scipy==1.18.1 rir-generator==0.3.0
+          python -m pip install numpy==2.3.4 scipy==1.16.3 rir-generator==0.3.0
           python scripts/verify_artifacts.py --directory _build/verification
           for name in triangle trapezoid pentagon; do node bin/boxrir.mjs simulate examples/$name.json examples/probe.wav generated/prism-workflows/$name; done
           python scripts/verify-prism-artifacts.py
           for name in reference-omni reference-cardioid reference-2d; do node bin/boxrir.mjs simulate examples/$name.json examples/probe.wav generated/reference-workflows/$name; done
           python scripts/verify-reference-artifacts.py
+          node scripts/build-release.mjs
+          node scripts/test-distribution.mjs
+          moon package
+          python scripts/test-moon-package.py
+          node scripts/benchmark-runtime.mjs
           node scripts/build-demo.mjs
+      - name: Browser Wasm integration
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1 typescript@5.9.3
+          npx tsc --noEmit --strict --module nodenext --target es2022 tests/sdk-types.mts
+          npx playwright install --with-deps chromium
+          node scripts/serve-demo.mjs &
+          node scripts/test-prism-browser.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boxrir-runtime
+          path: _build/distribution
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verification-evidence
+          path: |
+            generated/*/verification.json
+            generated/audiolabs-verification/*.json
+            generated/sdk-verification/*.json
+            generated/robustness/*.json
+            generated/prism-browser/results.json
+            generated/distribution-verification/result.json
+            generated/runtime-benchmark/results.json
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:

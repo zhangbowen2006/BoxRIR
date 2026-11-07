@@ -1,0 +1,349 @@
+{
+  "version": "0.2.0",
+  "verified_date": "2026-11-07",
+  "environment": {
+    "os": "Windows x64",
+    "node": "24.22.1",
+    "moon": "0.1.20261021",
+    "moonc": "0.10.17+093cb8f9c"
+  },
+  "moon_tests": {
+    "js": 24,
+    "wasm": 24,
+    "wasm-gc": 24,
+    "windows_native": "not run; MSVC/SDK unavailable",
+    "linux_native": "see exact-commit CI"
+  },
+  "node_tests": {
+    "passed": 24,
+    "failed": 0
+  },
+  "upstream_waveform": {
+    "source": "audiolabs/rir-generator@v0.3.0",
+    "commit": "052790faade19074c6921e007fb8972c60e8f0a6",
+    "cases": 103,
+    "samples": 155130,
+    "maximum_absolute_error": 2.6645352591003757e-15,
+    "alignment_normalization_or_gain_fit": false,
+    "random_seed": 20261107,
+    "random_cases": 64
+  },
+  "sdk": {
+    "js": {
+      "backend": "js",
+      "cases": 103,
+      "samples": 155130,
+      "maximum_absolute_error": 2.6645352591003757e-15
+    },
+    "wasm-gc": {
+      "backend": "wasm-gc",
+      "cases": 103,
+      "samples": 155130,
+      "maximum_absolute_error": 2.6645352591003757e-15
+    }
+  },
+  "reference_fixture_sha256": "f7a6f07f6a26ce6d456033d8631e653db50bcaa3bffcd29fd9e9d2a0f92c2f00",
+  "geometry": {
+    "pyroomacoustics_version": "0.10.1",
+    "shoebox_scenes": 32,
+    "shoebox_images": 2330,
+    "convex_prism_scenes": 20,
+    "convex_prism_visible_paths": 1687,
+    "prism_order_range": [
+      0,
+      4
+    ],
+    "prism_geometry_tolerance_m": 5e-05,
+    "independent_bfs_scenes": 5,
+    "independent_bfs_images": 225
+  },
+  "robustness": {
+    "js": {
+      "seed": 20261107,
+      "mutated_inputs": 192,
+      "accepted": 47,
+      "rejected": 145,
+      "uncaught_panics": 0
+    },
+    "wasm-gc": {
+      "seed": 20261107,
+      "mutated_inputs": 192,
+      "accepted": 47,
+      "rejected": 145,
+      "uncaught_panics": 0
+    }
+  },
+  "browser": {
+    "backend": "wasm-gc",
+    "checks": [
+      {
+        "name": "triangle",
+        "channels": 2,
+        "contributing_paths": [
+          45,
+          45
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "trapezoid",
+        "channels": 2,
+        "contributing_paths": [
+          63,
+          61
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "pentagon",
+        "channels": 2,
+        "contributing_paths": [
+          64,
+          65
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "reference-omni",
+        "channels": 2,
+        "contributing_paths": [
+          39389,
+          39374
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "reference-cardioid",
+        "channels": 2,
+        "contributing_paths": [
+          129,
+          129
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "reference-2d",
+        "channels": 2,
+        "contributing_paths": [
+          41,
+          41
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      }
+    ],
+    "invalidations": [
+      "preset",
+      "manual-scene",
+      "source-wav"
+    ],
+    "superseded_preview_revoked": true,
+    "empty_wav_rejected": true,
+    "cancel_and_restart": true,
+    "issues": [],
+    "mobile_overflow": false,
+    "maximumNumericDifference": 0,
+    "browser": "156.0.4314.58"
+  },
+  "distribution": {
+    "version": "0.2.0",
+    "packaged_files": 37,
+    "sha256_verified": true,
+    "checks": [
+      {
+        "backend": "js",
+        "sdk": true,
+        "cli": true,
+        "moonbit_python_and_native_compiler_not_required": true
+      },
+      {
+        "backend": "wasm-gc",
+        "sdk": true,
+        "cli": true,
+        "moonbit_python_and_native_compiler_not_required": true
+      }
+    ]
+  },
+  "moon_archive": {
+    "version": "0.2.0",
+    "source": "local Mooncakes archive; not a registry publication",
+    "packaged_files": 82,
+    "private_and_cache_directories_absent": true,
+    "checks": [
+      {
+        "target": "js",
+        "consumer_tests": 3,
+        "passed": true
+      },
+      {
+        "target": "wasm",
+        "consumer_tests": 3,
+        "passed": true
+      },
+      {
+        "target": "wasm-gc",
+        "consumer_tests": 3,
+        "passed": true
+      }
+    ]
+  },
+  "cli_reference_files": {
+    "reference": "unmodified rir-generator 0.3.0 binary",
+    "comparison": "same sample indices; no normalization, alignment or fitted gain",
+    "cases": [
+      {
+        "scene": "reference-omni",
+        "frames": 4096,
+        "channels": 2,
+        "wet_frames": 20095,
+        "maximum_rir_error": 1.5079616860758094e-09,
+        "maximum_wet_errors": [
+          1.3959720462919378e-09,
+          1.8607459878472454e-09
+        ],
+        "paths_truncated": true
+      },
+      {
+        "scene": "reference-cardioid",
+        "frames": 2048,
+        "channels": 2,
+        "wet_frames": 18047,
+        "maximum_rir_error": 2.2410968913977314e-10,
+        "maximum_wet_errors": [
+          3.281977536961911e-10,
+          4.4886903395602307e-10
+        ],
+        "paths_truncated": false
+      },
+      {
+        "scene": "reference-2d",
+        "frames": 2048,
+        "channels": 2,
+        "wet_frames": 18047,
+        "maximum_rir_error": 1.0555344931439947e-09,
+        "maximum_wet_errors": [
+          4.6558839769672566e-10,
+          9.309625570441682e-10
+        ],
+        "paths_truncated": false
+      }
+    ]
+  },
+  "cli_prism_files": {
+    "scope": "synthetic local workflows, not field measurements",
+    "cases": [
+      {
+        "scene": "triangle",
+        "paths": 90,
+        "rir_frames": 3232,
+        "wet_frames": 19231,
+        "channels": 2,
+        "maximum_convolution_errors": [
+          1.9286255856232337e-09,
+          2.2439407970642478e-09
+        ]
+      },
+      {
+        "scene": "trapezoid",
+        "paths": 124,
+        "rir_frames": 3232,
+        "wet_frames": 19231,
+        "channels": 2,
+        "maximum_convolution_errors": [
+          1.600905623344584e-09,
+          2.7090307844201966e-09
+        ]
+      },
+      {
+        "scene": "pentagon",
+        "paths": 129,
+        "rir_frames": 3232,
+        "wet_frames": 19231,
+        "channels": 2,
+        "maximum_convolution_errors": [
+          1.428886162169185e-09,
+          2.743017216144672e-09
+        ]
+      }
+    ]
+  },
+  "benchmark": {
+    "node": "v24.22.1",
+    "platform": "win32",
+    "architecture": "x64",
+    "scope": "single cold-process development measurements; no performance superiority or universal memory guarantee",
+    "records": [
+      {
+        "backend": "js",
+        "scenario": "reference",
+        "init_ms": 9.2956,
+        "render_ms": 502.41970000000003,
+        "maximum_rss_kib": 206956,
+        "rir_frames": 4096,
+        "wet_frames": 20095,
+        "channels": 2,
+        "output_bytes": 193644
+      },
+      {
+        "backend": "js",
+        "scenario": "convex-max-order",
+        "init_ms": 8.908999999999999,
+        "render_ms": 134.3127,
+        "maximum_rss_kib": 137532,
+        "rir_frames": 2432,
+        "wet_frames": 18431,
+        "channels": 1,
+        "output_bytes": 83568
+      },
+      {
+        "backend": "js",
+        "scenario": "large-buffer",
+        "init_ms": 8.733900000000002,
+        "render_ms": 4759.9713,
+        "maximum_rss_kib": 602216,
+        "rir_frames": 96000,
+        "wet_frames": 161535,
+        "channels": 8,
+        "output_bytes": 8241236
+      },
+      {
+        "backend": "wasm-gc",
+        "scenario": "reference",
+        "init_ms": 2.0914,
+        "render_ms": 498.79850000000005,
+        "maximum_rss_kib": 165300,
+        "rir_frames": 4096,
+        "wet_frames": 20095,
+        "channels": 2,
+        "output_bytes": 193644
+      },
+      {
+        "backend": "wasm-gc",
+        "scenario": "convex-max-order",
+        "init_ms": 2.260399999999997,
+        "render_ms": 86.48949999999999,
+        "maximum_rss_kib": 96324,
+        "rir_frames": 2432,
+        "wet_frames": 18431,
+        "channels": 1,
+        "output_bytes": 83568
+      },
+      {
+        "backend": "wasm-gc",
+        "scenario": "large-buffer",
+        "init_ms": 16.6178,
+        "render_ms": 3511.6798,
+        "maximum_rss_kib": 489352,
+        "rir_frames": 96000,
+        "wet_frames": 161535,
+        "channels": 8,
+        "output_bytes": 8241236
+      }
+    ]
+  },
+  "limitations": [
+    "synthetic tests, not measured-room calibration",
+    "no external user adoption or production-site reliability claim",
+    "no complete pyroomacoustics feature parity",
+    "bounded offline computation; not real-time audio"
+  ]
+}

@@ -1,7 +1,7 @@
 # Model contract
 
 This document describes the original BoxRIR renderer. The convex-prism extension
-is documented in LOCAL-20261105.md. The separately selected AudioLabs numerical
+is documented below. The separately selected AudioLabs numerical
 profile has different pressure coefficients, interpolation and time-window
 semantics; see AUDIOLABS-COMPATIBILITY.md. Do not transfer normalization or
 latency assumptions between the modes.
@@ -31,3 +31,25 @@ times add coherently. Order/time truncation is not an RT60 guarantee.
 Bounds: dimensions 0.1..1000 m, speed 100..1000 m/s, source-receiver separation
 at least 0.01 m, sample rate 8000..96000 Hz, duration 1..2000 integer ms,
 order 0..12, sinc half-width 4..32, at most 1,000,000 total RIR samples.
+
+## Convex prism contract
+
+`prism_scene` accepts 3..8 strictly convex counterclockwise floor vertices with
+no repeated closing vertex, each edge >=0.1m and coordinates in 0..1000m.
+Height is 0.1..1000m; source and receivers must lie strictly inside every plane.
+Wall absorption slots follow polygon edges, then floor, then ceiling. Order is
+0..4; at most 8201 reflection words are enumerated for eight vertices.
+
+Every reflected source retains its wall sequence and image history. Backtrace
+from each receiver to those successive images and intersect each finite face.
+Reject intersections outside the face or on another face, collinear/grazing
+segments and edge/corner hits (geometry epsilon 1e-7m). These degenerate paths
+are excluded, rather than counted as multiple reflections with ambiguous normals.
+For a convex room, segments connecting valid face hits remain inside the room.
+`trace_prism` exports ordered wall indices and physical hit points. Unfolded
+image distance equals total segment length; test reflection angles separately.
+
+Waveform generation uses the original normalized kernel and latency contract.
+This extension does not introduce concave rooms, obstacles or arbitrary 3D
+polyhedra. Upstream geometry/visibility comparisons are not waveform equivalence
+claims because their interpolation kernels differ.

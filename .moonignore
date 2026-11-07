@@ -1,0 +1,23 @@
+# This replaces .gitignore for Mooncakes packaging, so keep cache rules here.
+.DS_Store
+_build/
+target/
+target
+.mooncakes/
+.moonagent/
+generated/
+tmp/
+__pycache__/
+*.pyc
+.github/
+.git/
+node_modules/
+output/
+outputs/
+tests/
+cmd/reference-parity/
+docs/SUBMISSION.md
+docs/ACCEPTANCE.md
+docs/RELEASE-0.1.*.md
+docs/LOCAL-*.md
+AGENTS.md
