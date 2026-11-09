@@ -165,6 +165,7 @@ fn reference_config(
     "timeline": "upstream_sample_indices_clipped_to_nsample",
     "sample_unit": "linear_model_amplitude",
     "wall_order": Json(["x_low", "x_high", "y_low", "y_high", "z_low", "z_high"]),
+    "image_semantics": "admitted_after_order_filter_and_zero_axis_pruning",
   }
 }
 
@@ -179,8 +180,9 @@ fn reference_report(
   {
     "config": reference_config(input, response),
     "geometric_images": Json(
-      response.evaluated_candidates / response.audio.channel_count(),
+      response.contributing[0] + response.late[0] + response.zero[0],
     ),
+    "evaluated_candidates": Json(response.evaluated_candidates),
     "contributing_paths": Json(response.contributing),
     "omitted_late_paths": Json(response.late),
     "zero_gain_paths": Json(response.zero),
@@ -211,6 +213,10 @@ pub fn reference_samples_json(text : String) -> String {
   let input = match read_reference(text) {
     Ok(v) => v
     Err(e) => return error(e)
+  }
+  if input.nsample is Some(n) &&
+    n * input.receivers.length().to_double() > 65536.0 {
+    return error("raw JSON sample budget exceeded: 65536")
   }
   let result = match run_reference(input) {
     Ok(v) => v

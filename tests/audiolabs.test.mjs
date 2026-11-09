@@ -5,6 +5,16 @@ import crypto from 'node:crypto';
 import {reference_samples_json,generate_json} from '../_build/js/release/build/bridge/bridge.js';
 const data=JSON.parse(fs.readFileSync(new URL('./reference/audiolabs-0.3.0.json',import.meta.url)));
 
+test('reference diagnostics separate admitted images from evaluated loop candidates',()=>{
+  for(const [order,expected] of [[0,1],[1,7],[2,25]]){
+    const result=JSON.parse(generate_json(JSON.stringify({...data.cases[0].scene,dimension:3,max_order:order}),new Uint8Array()));
+    assert.equal(result.ok,true,result.error);const report=result.report;
+    assert.equal(report.geometric_images,expected);
+    for(let ch=0;ch<2;ch++)assert.equal(report.contributing_paths[ch]+report.omitted_late_paths[ch]+report.zero_gain_paths[ch],expected);
+    assert.ok(report.evaluated_candidates>=expected*2);
+  }
+});
+
 test('AudioLabs 0.3.0 complete waveform parity: all five patterns, filters, orders and dimensions',()=>{
   const embedded=fs.readFileSync(new URL('../cmd/reference-parity/fixtures.mbt',import.meta.url),'utf8').split('\n').filter(line=>line.trimStart().startsWith('#|')).map(line=>line.slice(line.indexOf('#|')+2)).join('\n');
   const digest=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
