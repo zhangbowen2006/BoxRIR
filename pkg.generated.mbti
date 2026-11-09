@@ -87,12 +87,14 @@ pub fn Response::channel(Self, Int32) -> Result[Array[Double], String]
 pub fn Response::channel_count(Self) -> Int32
 pub fn Response::contributing_paths(Self) -> Array[Int32]
 pub fn Response::omitted_late_paths(Self) -> Array[Int32]
+pub fn Response::paths(Self) -> Array[Path]
 pub fn Response::settings(Self) -> Scene
 pub fn Response::zero_gain_paths(Self) -> Array[Int32]
 
 pub struct Scene {
   // private fields
 }
+pub fn Scene::candidate_image_count(Self) -> Int32
 pub fn Scene::dimensions(Self) -> Vec3
 pub fn Scene::floor_plan(Self) -> Array[Point2]?
 pub fn Scene::latency_samples(Self) -> Int32

@@ -96,9 +96,10 @@ fn read_spectral(text : String) -> Result[SpectralSettings, String] {
     Err(e) => return Err(e)
     Ok(s) => s
   }
-  let half = input.band_filter_half_width.unwrap_or(256.0)
-  if !bounded_int(half, 64, 512) {
-    return Err("band_filter_half_width must be 64..512")
+  let minimum_half = (256 * scene.rate() + 15999) / 16000
+  let half = input.band_filter_half_width.unwrap_or(minimum_half.to_double())
+  if !bounded_int(half, minimum_half, 4096) {
+    return Err("band_filter_half_width must be ceil(256*fs/16000)..4096")
   }
   if input.air_db_per_m is Some(_) && input.atmosphere is Some(_) {
     return Err("specify air_db_per_m OR atmosphere, not both")
@@ -178,6 +179,7 @@ fn spectral_report(
     ),
     "paths_truncated": Json(response.paths_truncated),
     "direct_paths": Json(response.direct_paths.map(path_json)),
+    "wet": Json::null(),
   }
 }
 

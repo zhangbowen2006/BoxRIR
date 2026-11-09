@@ -9,6 +9,24 @@ pub struct ImageSource {
 }
 
 ///|
+/// Count bounded geometric candidates without allocating an image tree.
+pub fn Scene::candidate_image_count(self : Scene) -> Int32 {
+  if self.footprint is Some(vertices) {
+    let walls = vertices.length() + 2
+    let mut total = 1
+    let mut level = walls
+    for _ in 0..<self.max_order {
+      total = total + level
+      level = level * (walls - 1)
+    }
+    total
+  } else {
+    let n = self.max_order
+    (4 * n * n * n + 6 * n * n + 8 * n + 3) / 3
+  }
+}
+
+///|
 fn axis_images(
   length : Double,
   source : Double,

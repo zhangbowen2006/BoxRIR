@@ -5,18 +5,34 @@ pub fn octave_centers() -> Array[Double] {
 }
 
 ///|
+fn spectral_width(
+  sample_rate : Int32,
+  requested : Int32,
+) -> Result[Int32, String] {
+  if sample_rate < 16000 || sample_rate > 96000 {
+    return Err("spectral sample rate must be 16000..96000 Hz")
+  }
+  let minimum = (256 * sample_rate + 15999) / 16000
+  let half = if requested == 0 { minimum } else { requested }
+  if half < minimum || half > 4096 {
+    return Err(
+      "spectral FIR half-width must resolve the lowest bands: ceil(256*fs/16000)..4096",
+    )
+  }
+  Ok(half)
+}
+
+///|
 /// Complementary linear-phase FIR bank, using the existing MoonSpectrum
 /// normalized Hamming lowpasses. Sum of filters is a unit delayed impulse.
 /// This is a finite engineering filter bank, not IEC 61260 certification.
 pub fn octave_filters(
   sample_rate : Int32,
-  half_width~ : Int32 = 256,
+  half_width~ : Int32 = 0,
 ) -> Result[Array[Array[Double]], String] {
-  if sample_rate < 16000 ||
-    sample_rate > 96000 ||
-    half_width < 64 ||
-    half_width > 512 {
-    return Err("spectral filter needs 16000..96000 Hz and half-width 64..512")
+  let half_width = match spectral_width(sample_rate, half_width) {
+    Err(e) => return Err(e)
+    Ok(v) => v
   }
   let centers = octave_centers()
   let length = 2 * half_width + 1
@@ -80,8 +96,13 @@ pub fn spectral_rir(
   s : Scene,
   band_absorption : Array[Array[Double]],
   air_db_per_m~ : Array[Double] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-  filter_half_width~ : Int32 = 256,
+  filter_half_width~ : Int32 = 0,
 ) -> Result[SpectralRir, String] {
+  let filter_half_width = match
+    spectral_width(s.sample_rate, filter_half_width) {
+    Err(e) => return Err(e)
+    Ok(v) => v
+  }
   let wall_count = s.absorption.length()
   if band_absorption.length() != wall_count ||
     !band_absorption.all(fn(wall) {
@@ -189,7 +210,7 @@ pub fn spectral_rir(
     paths,
     direct_paths,
     paths_truncated: truncated,
-    geometric_images: traced.length() / count,
+    geometric_images: s.candidate_image_count(),
     contributing,
     late,
     zero,

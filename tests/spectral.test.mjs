@@ -11,6 +11,7 @@ for(const backend of ['js','wasm-gc']) {
     for(const fixture of data.cases){
       const raw=Buffer.from(fixture.float64_le,'base64');assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),fixture.sha256);
       const actual=engine.spectralSamples(fixture.scene);assert.equal(actual.channels.length,fixture.channels);
+      assert.equal(actual.report.wet,null);
       for(let ch=0;ch<fixture.channels;ch++){
         assert.equal(actual.channels[ch].length,fixture.frames);
         for(let i=0;i<fixture.frames;i++){
@@ -19,7 +20,7 @@ for(const backend of ['js','wasm-gc']) {
           maximumError=Math.max(maximumError,error);samples++;
         }
       }
-      assert.equal(actual.report.config.latency_samples,272);
+      assert.equal(actual.report.config.latency_samples,16+Math.ceil(256*fixture.scene.sample_rate/16000));
     }
     for(const fixture of data.atmosphere){
       const result=engine.spectralSamples({...data.cases[0].scene,atmosphere:fixture.input});
@@ -39,3 +40,16 @@ for(const backend of ['js','wasm-gc']) {
     const bytes=rendered.rirWav;assert.equal(bytes.byteLength,58+rendered.report.config.output_frames*2*4);
   });
 }
+
+test('spectral prism diagnostics retain candidate-word counts and per-receiver visibility',async()=>{
+  const engine=await createBoxRIR({...options,backend:'js'});
+  for(const name of ['trapezoid','pentagon']){
+    const input=JSON.parse(fs.readFileSync(`examples/${name}.json`));
+    const {absorption,...geometry}=input;
+    const result=engine.spectralSamples({...geometry,model:'octave_bands',band_absorption:absorption.map(a=>Array(6).fill(a))});
+    const walls=absorption.length,order=input.max_order;
+    const expected=1+Array.from({length:order},(_,n)=>walls*(walls-1)**n).reduce((a,b)=>a+b,0);
+    assert.equal(result.report.geometric_images,expected);
+    assert.notEqual(result.report.contributing_paths[0],result.report.contributing_paths[1]);
+  }
+});

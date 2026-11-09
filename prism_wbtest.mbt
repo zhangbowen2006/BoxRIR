@@ -190,6 +190,7 @@ test "maximum convex geometry has a bounded reflection-word search" {
     150,
   ).unwrap()
   assert_eq(images(s).length(), 8201)
+  assert_eq(s.candidate_image_count(), 8201)
   let paths = trace_prism(s)
   assert_true(paths.length() > 100 && paths.length() < 8201)
   assert_true(paths.all(fn(p) { p.path.order <= 4 && p.path.distance > 0.0 }))

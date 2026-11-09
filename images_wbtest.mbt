@@ -54,3 +54,23 @@ test "six asymmetric walls map to the correct first reflections" {
     assert_eq(im.reflection, if im.order == 0 { 1.0 } else { 0.0 })
   }
 }
+
+///|
+test "allocation-free candidate counts match explicit images at every shoebox order" {
+  for order in 0..<13 {
+    let s = scene(
+      { x: 6.0, y: 4.0, z: 3.0, },
+      { x: 1.0, y: 1.0, z: 1.0, },
+      [{ x: 2.0, y: 2.0, z: 1.0, }],
+      Array::make(6, 0.2),
+      16000,
+      order,
+      100,
+    ).unwrap()
+    assert_eq(s.candidate_image_count(), images(s).length())
+    let r = render(s)
+    let copied = r.paths()
+    copied[0].bounces[0] = 100
+    assert_eq(r.paths()[0].bounces[0], 0)
+  }
+}

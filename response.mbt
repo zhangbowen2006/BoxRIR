@@ -5,6 +5,7 @@ pub struct Response {
   priv contributing : Array[Int32]
   priv late : Array[Int32]
   priv zero : Array[Int32]
+  priv path_details : Array[Path]
 }
 
 ///|
@@ -45,7 +46,8 @@ pub fn render(s : Scene) -> Response {
   let contributing = Array::make(s.receivers.length(), 0)
   let late = Array::make(s.receivers.length(), 0)
   let zero = Array::make(s.receivers.length(), 0)
-  for p in trace(s) {
+  let paths = trace(s)
+  for p in paths {
     let r = p.receiver
     if p.delay_samples >= s.frames.to_double() {
       late[r] = late[r] + 1
@@ -62,7 +64,14 @@ pub fn render(s : Scene) -> Response {
     }
     contributing[r] = contributing[r] + 1
   }
-  { scene: s, samples: channels, contributing, late, zero, }
+  {
+    scene: s,
+    samples: channels,
+    contributing,
+    late,
+    zero,
+    path_details: paths,
+  }
 }
 
 ///|
@@ -100,4 +109,10 @@ pub fn Response::omitted_late_paths(self : Response) -> Array[Int32] {
 ///|
 pub fn Response::zero_gain_paths(self : Response) -> Array[Int32] {
   self.zero.copy()
+}
+
+///|
+/// Reuse the paths used for this render; isolate mutable bounce-count arrays.
+pub fn Response::paths(self : Response) -> Array[Path] {
+  self.path_details.map(fn(p) { { ..p, bounces: p.bounces.copy(), } })
 }

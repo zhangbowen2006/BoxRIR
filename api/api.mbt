@@ -242,14 +242,15 @@ pub fn describe_json(text : String) -> String {
     Ok(s) => s
   }
   if s.floor_plan() is Some(_) {
+    let specular = @core.trace_prism(s)
     return (
       {
         "ok": true,
         "config": config(s),
         "images": Json(@core.images(s).map(image_json)),
-        "paths": Json(@core.trace(s).map(path_json)),
+        "paths": Json(specular.map(fn(p) { path_json(p.path) })),
         "specular_paths": Json(
-          @core.trace_prism(s).map(fn(p) {
+          specular.map(fn(p) {
             {
               "path": path_json(p.path),
               "walls": Json(p.walls),
@@ -360,13 +361,13 @@ fn generate_encoded(text : String, dry_wav : Bytes, base64 : Bool) -> String {
   }
   let report : Json = {
     "config": config(s),
-    "geometric_images": Json(@core.images(s).length()),
+    "geometric_images": Json(s.candidate_image_count()),
     "contributing_paths": Json(r.contributing_paths()),
     "omitted_late_paths": Json(r.omitted_late_paths()),
     "zero_gain_paths": Json(r.zero_gain_paths()),
     "rir_peaks": peaks(channels),
     "wet": wet_info,
-    "paths": Json(@core.trace(s).map(path_json)),
+    "paths": Json(r.paths().map(path_json)),
   }
   (
     {

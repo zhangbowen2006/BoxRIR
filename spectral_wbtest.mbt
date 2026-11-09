@@ -93,3 +93,31 @@ test "spectral intermediate allocation is bounded before building six band buffe
     spectral_rir(s, Array::makei(6, fn(_) { Array::make(6, 0.2) })) is Err(_),
   )
 }
+
+///|
+test "octave centres retain their own material band at high sample rates" {
+  let centers = octave_centers()
+  for rate in [16000, 44100, 96000] {
+    let filters = octave_filters(rate).unwrap()
+    let half = (filters[0].length() - 1) / 2
+    for frequency_band in 0..<6 {
+      for filter_band in 0..<6 {
+        let mut amplitude = 0.0
+        for i in 0..<filters[filter_band].length() {
+          amplitude = amplitude +
+            filters[filter_band][i] *
+            @math.cos(
+              2.0 *
+              PI *
+              centers[frequency_band] *
+              (i - half).to_double() /
+              rate.to_double(),
+            )
+        }
+        let expected = if filter_band == frequency_band { 1.0 } else { 0.0 }
+        assert_true((amplitude - expected).abs() < 0.02)
+      }
+    }
+  }
+  assert_true(octave_filters(96000, half_width=256) is Err(_))
+}

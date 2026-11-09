@@ -32,7 +32,7 @@ def air_loss(conditions):
     return code.attenuation_coefficient(pressure,temperature,101.325,293.15,nitrogen,oxygen,CENTERS)
 
 def independent_rir(scene):
-    fs=scene['sample_rate'];half=scene.get('half_width',16);bank_half=scene.get('band_filter_half_width',256)
+    fs=scene['sample_rate'];half=scene.get('half_width',16);bank_half=scene.get('band_filter_half_width',math.ceil(256*fs/16000))
     frames=math.ceil(fs*scene['duration_ms']/1000);base_frames=frames+2*half
     material=np.asarray(scene['band_absorption']);speed=scene.get('speed',343)
     air=air_loss(scene['atmosphere']) if 'atmosphere' in scene else np.asarray(scene.get('air_db_per_m',[0]*6))
@@ -71,6 +71,7 @@ if __name__=='__main__':
         if index%3==0:scene['atmosphere']=dict(temperature_c=[-20,20,50,0][index//3],relative_humidity_percent=50,pressure_kpa=101.325)
         elif index%3==1:scene['air_db_per_m']=[0.,.01,.02,.03,.04,.05]
         if index>=8:scene.update(sample_rate=[32000,44100,48000,96000][index-8],duration_ms=10)
+        if index==11:scene['receivers']=scene['receivers'][:1]
         expected,air=independent_rir(scene)
         raw=np.asarray(expected,dtype='<f8').tobytes()
         cases.append(dict(name=f'spectral-{index:02d}',scene=scene,channels=len(expected),frames=expected.shape[1],float64_le=base64.b64encode(raw).decode(),sha256=hashlib.sha256(raw).hexdigest(),air_db_per_m=air.tolist()))
