@@ -231,6 +231,9 @@ fn config(s : @core.Scene) -> Json {
 ///|
 /// Geometry-only inspection useful for independent model comparisons.
 pub fn describe_json(text : String) -> String {
+  if spectral_requested(text) {
+    return spectral_description(text)
+  }
   if reference_requested(text) {
     return reference_description(text)
   }
@@ -302,6 +305,9 @@ pub fn generate_base64_json(text : String, dry_wav : Bytes) -> String {
 
 ///|
 fn generate_encoded(text : String, dry_wav : Bytes, base64 : Bool) -> String {
+  if spectral_requested(text) {
+    return spectral_generate(text, dry_wav, base64)
+  }
   if reference_requested(text) {
     return reference_generate(text, dry_wav, base64)
   }

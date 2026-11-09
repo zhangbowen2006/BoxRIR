@@ -1,0 +1,14 @@
+{
+  "repository": "python-acoustics/python-acoustics",
+  "commit": "99d79206159b822ea2f4e9d27c8b2fbfeb704d38",
+  "files": {
+    "acoustics/standards/iso_9613_1_1993.py": {
+      "url": "https://raw.githubusercontent.com/python-acoustics/python-acoustics/99d79206159b822ea2f4e9d27c8b2fbfeb704d38/acoustics/standards/iso_9613_1_1993.py",
+      "sha256": "167f32776b00e8096006138647f71c9675b6b5b53613f62193ea1df1447f541f"
+    },
+    "LICENSE": {
+      "url": "https://raw.githubusercontent.com/python-acoustics/python-acoustics/99d79206159b822ea2f4e9d27c8b2fbfeb704d38/LICENSE",
+      "sha256": "a02eec89fc747e6bfe9e7fae0b135d15fb8add78aaae3a9e09d1cebaf7c4f7f2"
+    }
+  }
+}

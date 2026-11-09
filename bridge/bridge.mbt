@@ -17,6 +17,12 @@ pub fn reference_samples_json(text : String) -> String {
 }
 
 ///|
+#export_name("spectral_samples_json")
+pub fn spectral_samples_json(text : String) -> String {
+  @api.spectral_samples_json(text)
+}
+
+///|
 #export_name("render_base64_json")
 pub fn render_base64_json(text : String, dry_base64 : String) -> String {
   if dry_base64.length() > 5592408 {

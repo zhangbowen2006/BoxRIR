@@ -19,17 +19,20 @@ struct Samples {
 } derive(FromJson)
 
 ///|
-fn main {
-  let text = reference_fixture_text
+fn verify_fixtures(text : String, spectral : Bool) -> Unit {
   let fixtures : Fixtures = @json.from_json(@json.parse(text)) catch {
     _ => abort("invalid fixture schema")
   }
   let mut maximum_error = 0.0
   let mut samples = 0
   for c in fixtures.cases {
-    let response = @api.reference_samples_json(c.scene.stringify())
+    let response = if spectral {
+      @api.spectral_samples_json(c.scene.stringify())
+    } else {
+      @api.reference_samples_json(c.scene.stringify())
+    }
     let actual : Samples = @json.from_json(@json.parse(response)) catch {
-      _ => abort(c.name + ": " + response)
+      _ => abort(c.name + ": engine rejected input or malformed response")
     }
     if !actual.ok || actual.channels.length() != c.channels {
       abort(c.name + ": wrong channel count")
@@ -68,8 +71,21 @@ fn main {
     (
       {
         "cases": Json(fixtures.cases.length()),
+        "profile": Json(
+          if spectral {
+            "octave_bands"
+          } else {
+            "audiolabs_v030"
+          },
+        ),
         "samples": Json(samples),
         "maximum_absolute_error": Json(maximum_error),
       } : Json).stringify(),
   )
+}
+
+///|
+fn main {
+  verify_fixtures(reference_fixture_text, false)
+  verify_fixtures(spectral_fixture_text, true)
 }

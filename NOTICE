@@ -16,6 +16,11 @@ The original BoxRIR renderer and convex-prism extension remain separate modes;
 their interpolation and timing conventions are not represented as equivalent.
 
 Runtime package dependencies:
+The atmospheric loss equations are adapted from Python Acoustics commit
+99d79206159b822ea2f4e9d27c8b2fbfeb704d38, Copyright (c) 2013 Python Acoustics,
+BSD-3-Clause. Full terms in docs/licenses/python-acoustics-BSD.txt (licenses/
+in runtime bundles); exact source hashes in docs/provenance/.
+
 chgttyyr/MoonSpectrum 0.2.2 - Apache-2.0 (FFT/IFFT; BoxRIR shares the dry FFT
 across receivers and implements the multichannel convolution orchestration).
 Ridge-Lab/moonwavkit 0.1.3 - MIT (WAV input decoding).

@@ -2,17 +2,25 @@
 package "zhangbowen2006/boxrir"
 
 // Values
+pub fn atmospheric_air_loss(Double, Double, pressure_kpa? : Double) -> Result[Array[Double], String]
+
 pub fn audiolabs_rir(Vec3, Vec3, Array[Vec3], Int32, speed? : Double, beta? : Array[Double]?, reverberation_time? : Double?, nsample? : Int32?, order? : Int32, dimension? : Int32, microphone? : String, orientation? : Array[Double], high_pass? : Bool) -> Result[ReferenceRir, String]
 
 pub fn convolve(Response, Array[Double]) -> Result[Audio, String]
 
 pub fn images(Scene) -> Array[ImageSource]
 
+pub fn octave_centers() -> Array[Double]
+
+pub fn octave_filters(Int32, half_width? : Int32) -> Result[Array[Array[Double]], String]
+
 pub fn prism_scene(Array[Point2], Double, Vec3, Array[Vec3], Array[Double], Int32, Int32, Int32, speed? : Double, half_width? : Int32) -> Result[Scene, String]
 
 pub fn render(Scene) -> Response
 
 pub fn scene(Vec3, Vec3, Array[Vec3], Array[Double], Int32, Int32, Int32, speed? : Double, half_width? : Int32) -> Result[Scene, String]
+
+pub fn spectral_rir(Scene, Array[Array[Double]], air_db_per_m? : Array[Double], filter_half_width? : Int32) -> Result[SpectralRir, String]
 
 pub fn trace(Scene) -> Array[Path]
 
@@ -96,6 +104,25 @@ pub fn Scene::receiver_positions(Self) -> Array[Vec3]
 pub fn Scene::sound_speed(Self) -> Double
 pub fn Scene::source_position(Self) -> Vec3
 pub fn Scene::wall_absorption(Self) -> Array[Double]
+
+pub struct SpectralPath {
+  path : Path
+  band_gains : Array[Double]
+}
+
+pub struct SpectralRir {
+  audio : Audio
+  paths : Array[SpectralPath]
+  direct_paths : Array[Path]
+  paths_truncated : Bool
+  geometric_images : Int32
+  contributing : Array[Int32]
+  late : Array[Int32]
+  zero : Array[Int32]
+  band_absorption : Array[Array[Double]]
+  air_db_per_m : Array[Double]
+  filter_half_width : Int32
+}
 
 pub struct SpecularPath {
   path : Path

@@ -70,5 +70,6 @@ export async function createBoxRIR({backend='js',jsModuleURL=new URL('./bridge.j
     },
     inspect(scene) { return response(engine.describe_json(sceneText(scene))); },
     referenceSamples(scene) { return response(engine.reference_samples_json(sceneText(scene))); },
+    spectralSamples(scene) { return response(engine.spectral_samples_json(sceneText(scene))); },
   });
 }

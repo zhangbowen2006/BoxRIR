@@ -9,7 +9,13 @@ export interface ReferenceScene extends CommonScene {
   microphone?: 'o'|'b'|'c'|'s'|'h'|'omnidirectional'|'bidirectional'|'cardioid'|'subcardioid'|'hypercardioid';
   orientation?: []|[number]|[number,number]; high_pass?: boolean;
 }
-export type Scene = ShoeboxScene | PrismScene | ReferenceScene;
+export interface SpectralScene extends CommonScene {
+  model:'octave_bands';room?:Vec3;footprint?:Point2[];height?:number;
+  band_absorption:number[][];air_db_per_m?:number[];
+  atmosphere?:{temperature_c:number;relative_humidity_percent:number;pressure_kpa?:number};
+  max_order:number;duration_ms:number;half_width?:number;band_filter_half_width?:number;
+}
+export type Scene = ShoeboxScene | PrismScene | ReferenceScene | SpectralScene;
 export interface Path { receiver: number; image: Vec3; bounces: number[]; order: number; distance: number; delay_samples: number; reflection: number; gain: number }
 export interface Report {
   config: { sample_rate: number; receivers: Vec3[]; output_frames: number; latency_samples: number; [key: string]: unknown };
@@ -24,5 +30,6 @@ export interface BoxRIR {
   render(scene: Scene|string, options?: {dryWav?: Uint8Array}): {backend:'js'|'wasm-gc';report:Report;rirWav:Uint8Array;wetWav:Uint8Array|null};
   inspect(scene: Scene|string): {ok:true;[key:string]:unknown};
   referenceSamples(scene: ReferenceScene|string): {ok:true;config:Record<string,unknown>;channels:number[][]};
+  spectralSamples(scene: SpectralScene|string): {ok:true;report:Report;channels:number[][]};
 }
 export function createBoxRIR(options?: {backend?:'js'|'wasm-gc';jsModuleURL?:string|URL;wasmURL?:string|URL;wasmBytes?:BufferSource}): Promise<BoxRIR>;
