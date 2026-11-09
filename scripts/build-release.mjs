@@ -4,11 +4,18 @@ import {createHash} from 'node:crypto';
 import {root,cleanProduct,licenses} from './build-support.mjs';
 import {buildSDK} from './build-sdk.mjs';
 import {version} from '../sdk/version.mjs';
+import {sourceProvenance} from './provenance.mjs';
+if(process.argv.includes('--require-clean')){
+  const source=sourceProvenance(root);
+  if(source.provenance!=='git'||source.working_tree_dirty!==false)throw Error('Release requires an exact, clean source checkout');
+}
 const sdk=buildSDK(), destination=cleanProduct('distribution');
 fs.cpSync(sdk,path.join(destination,'sdk'),{recursive:true});
 fs.cpSync(path.join(root,'bin'),path.join(destination,'bin'),{recursive:true});
 fs.cpSync(path.join(root,'examples'),path.join(destination,'examples'),{recursive:true});
 licenses(destination);
+fs.cpSync(path.join(root,'docs/provenance'),path.join(destination,'provenance'),{recursive:true});
+fs.copyFileSync(path.join(root,'docs/SPECTRAL.md'),path.join(destination,'SPECTRAL.md'));
 fs.copyFileSync(path.join(root,'docs/RUNTIME.md'),path.join(destination,'README.md'));
 fs.writeFileSync(path.join(destination,'package.json'),JSON.stringify({name:'@boxrir/runtime',version,type:'module',private:true,engines:{node:'>=24'},exports:{'.':{types:'./sdk/client.d.mts',import:'./sdk/client.mjs'}}},null,2)+'\n');
 const hashes={};

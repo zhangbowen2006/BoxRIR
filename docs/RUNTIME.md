@@ -1,10 +1,11 @@
-# BoxRIR 0.2.0 runtime
+# BoxRIR 0.3.0 runtime
 
 This standalone bundle needs Node.js 24 or later; it does not need MoonBit,
 Python, npm install or a native compiler. The core is compiled from MoonBit.
 
 ```sh
 node bin/boxrir.mjs --version
+node bin/boxrir.mjs simulate examples/spectral-before.json examples/probe.wav output-spectral
 node bin/boxrir.mjs rir examples/stereo.json output-stereo
 node bin/boxrir.mjs simulate examples/triangle.json examples/probe.wav output-triangle
 node bin/boxrir.mjs --backend wasm-gc simulate examples/reference-cardioid.json examples/probe.wav output-cardioid
@@ -36,7 +37,7 @@ applications and terminate that worker to cancel. Type declarations accompany
 the SDK. `inspect` exposes geometry; `referenceSamples` returns Float64 arrays
 for numerical work. `render` returns Float32 WAV bytes with model amplitudes.
 
-Three separate contracts: legacy shoebox uses normalized Hann-sinc with common
+Four separate contracts: octave_bands adds path-specific six-band materials and atmospheric loss with sample-rate-scaled complementary FIR synthesis (see SPECTRAL.md).  legacy shoebox uses normalized Hann-sinc with common
 kernel latency; convex prisms add finite-face visibility; `audiolabs_v030` ports
 AudioLabs RIR Generator v0.3.0 with signed pressure coefficients, five receiver
 patterns, 2D/3D reflections, 8ms interpolation and optional 100Hz high-pass.
@@ -54,10 +55,10 @@ Unknown fields, duplicate keys, invalid geometry, NaN/Inf audio and unsupported
 formats fail. No implicit resampling, downmix, limiting or peak normalization.
 
 This package does not implement obstacles, diffraction, scattering, arbitrary
-polyhedra, air absorption, moving geometry or frequency-dependent materials.
+polyhedra, moving geometry or continuously frequency-dependent materials.
 Use a full acoustic simulator when those are required. The synthetic probe is
 a reproducibility input, not a real-room measurement or adoption claim.
 
-Retain `LICENSE`, `NOTICE` and `licenses/` when distributing. BoxRIR is Apache-2.0;
+Retain `LICENSE`, `NOTICE` and `licenses/` when distributing. BoxRIR is Apache-2.0; atmospheric equations retain BSD-3-Clause terms;
 the AudioLabs numerical port and MoonWavKit carry MIT notices. `SHA256SUMS.json`
 binds the packaged files; `sdk/build-info.json` records source provenance.

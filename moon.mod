@@ -11,7 +11,7 @@
 
 name = "zhangbowen2006/boxrir"
 
-version = "0.2.0"
+version = "0.3.0"
 
 readme = "README.md"
 
@@ -23,7 +23,7 @@ keywords = [ "acoustics", "image-source", "rir", "simulation" ]
 
 preferred_target = "wasm"
 
-description = "MoonBit shoebox and convex-prism RIR simulation with a bounded AudioLabs-compatible numerical profile"
+description = "MoonBit RIR engine with path-dependent octave materials, atmospheric loss, convex geometry and AudioLabs-compatible numerics"
 
 import {
   "chgttyyr/MoonSpectrum@0.2.2",

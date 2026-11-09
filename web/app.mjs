@@ -61,7 +61,7 @@ $('run').onclick=async()=>{
   }catch(e){if(request===requestSerial){busy(false);status(e.message,true);}}
 };
 try{
-  const names=['stereo','wall-before','wall-after','array','triangle','trapezoid','pentagon','reference-omni','reference-cardioid','reference-2d'];
+  const names=['stereo','wall-before','wall-after','array','triangle','trapezoid','pentagon','reference-omni','reference-cardioid','reference-2d','spectral-before','spectral-after','spectral-prism'];
   const responses=await Promise.all(names.map(n=>fetch(`examples/${n}.json`).then(r=>{if(!r.ok)throw Error('示例加载失败');return r.json()})));
   names.forEach((n,i)=>presets[n]=responses[i]);probe=await fetch('examples/probe.wav').then(r=>r.arrayBuffer());
   resetWorker();$('preset').onchange();busy(false);status('已就绪。计算在本浏览器内运行。');

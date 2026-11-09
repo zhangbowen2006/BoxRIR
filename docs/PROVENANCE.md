@@ -9,11 +9,11 @@ BoxRIR与本人NeedleRail、AgentCanary、MoonGate、WasmSlim等项目在同一�
 | 来源 | 实际使用 | 许可 |
 |---|---|---|
 | MoonBit core | 标准库及数学运算 | Apache-2.0 |
-| chgttyyr/MoonSpectrum 0.2.2 | 直接调用FFT线性卷积，不复制其源码 | Apache-2.0，完整文本见licenses/MoonSpectrum.txt |
+| chgttyyr/MoonSpectrum 0.2.2 | 调用FFT/IFFT，由本项目组织共享声源频谱的多通道卷积 | Apache-2.0，完整文本见licenses/MoonSpectrum.txt |
 | Ridge-Lab/moonwavkit 0.1.3 | WAV解析与PCM/Float32输入解码；本项目先限制块边界并过滤元数据 | MIT，完整文本见licenses/MoonWavKit.txt |
 | moonbitlang/x 0.4.45 | MoonSpectrum声明的传递依赖 | Apache-2.0；未计为本项目新增工作 |
 | pyroomacoustics 0.10.1 | 开发验证fixture生成器，通过公共API调用；生产库不依赖Python | MIT，文本见licenses/pyroomacoustics.txt |
-| audiolabs/rir-generator v0.3.0 | 原模式为参考；新增 audiolabs.mbt 数值核及默认参数处理为实际移植；原始 C++/Python 仅用于开发验证 | MIT，wrapper文本见licenses/rir-generator.txt；core完整声明见licenses/audiolabs-rir-generator-MIT.txt；固定SHA见tests/reference/audiolabs-source-manifest.json |
+| audiolabs/rir-generator v0.3.0 | 原模式为参考；新增 audiolabs.mbt 数值核及默认参数处理为实际移植；原始 C++/Python 仅用于开发验证 | MIT，wrapper文本见licenses/rir-generator.txt；core完整声明见licenses/audiolabs-rir-generator-MIT.txt；固定SHA见docs/provenance/audiolabs-source-manifest.json |
 
 roomacoustics和moondsp为相关项目，调查范围和功能交集见RESEARCH.md。未复用其声学分析、Freeverb实现或Python素材生成代码，不隐瞒同领域已有成果。
 

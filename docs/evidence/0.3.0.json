@@ -1,0 +1,312 @@
+{
+  "version": "0.3.0",
+  "date": "2026-11-09",
+  "scope": "local verification; remote CI and registry status are recorded in release results",
+  "moon_tests": {
+    "js": 31,
+    "wasm": 31,
+    "wasm-gc": 31,
+    "windows_native": "not run"
+  },
+  "node_tests": {
+    "passed": 31,
+    "failed": 0
+  },
+  "original_reference": {
+    "cases": 103,
+    "samples": 155130,
+    "maximum_absolute_error": 2.6645352591003757e-15
+  },
+  "spectral": {
+    "js": {
+      "backend": "js",
+      "cases": 12,
+      "samples": 29786,
+      "atmosphere_cases": 36,
+      "maximum_absolute_error": 4.163336342344337e-17
+    },
+    "wasm-gc": {
+      "backend": "wasm-gc",
+      "cases": 12,
+      "samples": 29786,
+      "atmosphere_cases": 36,
+      "maximum_absolute_error": 4.163336342344337e-17
+    }
+  },
+  "spectral_files": {
+    "scope": "report-driven spectral synthesis and actual WAV/convolution; geometry independently checked by other tests",
+    "cases": [
+      {
+        "scene": "spectral-before",
+        "channels": 2,
+        "rir_frames": 2464,
+        "wet_frames": 18463,
+        "maximum_rir_error": 1.0202996225672223e-09,
+        "maximum_wet_error": 1.8547726132744913e-09
+      },
+      {
+        "scene": "spectral-after",
+        "channels": 2,
+        "rir_frames": 2464,
+        "wet_frames": 18463,
+        "maximum_rir_error": 4.4243065808191595e-10,
+        "maximum_wet_error": 1.8217322511615563e-09
+      },
+      {
+        "scene": "spectral-prism",
+        "channels": 2,
+        "rir_frames": 3744,
+        "wet_frames": 19743,
+        "maximum_rir_error": 3.3193918447249615e-09,
+        "maximum_wet_error": 1.8582507338438248e-09
+      }
+    ]
+  },
+  "browser": {
+    "backend": "wasm-gc",
+    "checks": [
+      {
+        "name": "triangle",
+        "channels": 2,
+        "contributing_paths": [
+          45,
+          45
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "trapezoid",
+        "channels": 2,
+        "contributing_paths": [
+          63,
+          61
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "pentagon",
+        "channels": 2,
+        "contributing_paths": [
+          64,
+          65
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "reference-omni",
+        "channels": 2,
+        "contributing_paths": [
+          39389,
+          39374
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "reference-cardioid",
+        "channels": 2,
+        "contributing_paths": [
+          129,
+          129
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "reference-2d",
+        "channels": 2,
+        "contributing_paths": [
+          41,
+          41
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "spectral-before",
+        "channels": 2,
+        "contributing_paths": [
+          129,
+          129
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "spectral-after",
+        "channels": 2,
+        "contributing_paths": [
+          129,
+          129
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      },
+      {
+        "name": "spectral-prism",
+        "channels": 2,
+        "contributing_paths": [
+          63,
+          61
+        ],
+        "download_agrees_with_cli_within_double_tolerance": true
+      }
+    ],
+    "invalidations": [
+      "preset",
+      "manual-scene",
+      "source-wav"
+    ],
+    "superseded_preview_revoked": true,
+    "empty_wav_rejected": true,
+    "cancel_and_restart": true,
+    "issues": [],
+    "mobile_overflow": false,
+    "maximumNumericDifference": 0,
+    "browser": "157.0.4341.42"
+  },
+  "runtime_distribution": {
+    "version": "0.3.0",
+    "packaged_files": 47,
+    "sha256_verified": true,
+    "checks": [
+      {
+        "backend": "js",
+        "sdk": true,
+        "cli": true,
+        "moonbit_python_and_native_compiler_not_required": true
+      },
+      {
+        "backend": "wasm-gc",
+        "sdk": true,
+        "cli": true,
+        "moonbit_python_and_native_compiler_not_required": true
+      }
+    ]
+  },
+  "archive_consumer": {
+    "tests_per_target": 35,
+    "public_consumer_tests": 4,
+    "targets": [
+      "js",
+      "wasm",
+      "wasm-gc"
+    ],
+    "is_registry_installation": false
+  },
+  "benchmark": {
+    "node": "v24.22.1",
+    "platform": "win32",
+    "architecture": "x64",
+    "scope": "single cold-process development measurements; no performance superiority or universal memory guarantee",
+    "records": [
+      {
+        "backend": "js",
+        "scenario": "spectral-materials",
+        "init_ms": 19.641199999999998,
+        "render_ms": 469.6715,
+        "maximum_rss_kib": 205340,
+        "rir_frames": 2464,
+        "wet_frames": 18463,
+        "channels": 2,
+        "output_bytes": 167532
+      },
+      {
+        "backend": "js",
+        "scenario": "reference",
+        "init_ms": 20.473000000000006,
+        "render_ms": 1160.8222,
+        "maximum_rss_kib": 184224,
+        "rir_frames": 4096,
+        "wet_frames": 20095,
+        "channels": 2,
+        "output_bytes": 193644
+      },
+      {
+        "backend": "js",
+        "scenario": "convex-max-order",
+        "init_ms": 20.586800000000004,
+        "render_ms": 257.2559,
+        "maximum_rss_kib": 131324,
+        "rir_frames": 2432,
+        "wet_frames": 18431,
+        "channels": 1,
+        "output_bytes": 83568
+      },
+      {
+        "backend": "js",
+        "scenario": "large-buffer",
+        "init_ms": 20.068199999999997,
+        "render_ms": 9466.4014,
+        "maximum_rss_kib": 578824,
+        "rir_frames": 96000,
+        "wet_frames": 161535,
+        "channels": 8,
+        "output_bytes": 8241236
+      },
+      {
+        "backend": "wasm-gc",
+        "scenario": "spectral-materials",
+        "init_ms": 5.546599999999998,
+        "render_ms": 316.62080000000003,
+        "maximum_rss_kib": 131064,
+        "rir_frames": 2464,
+        "wet_frames": 18463,
+        "channels": 2,
+        "output_bytes": 167532
+      },
+      {
+        "backend": "wasm-gc",
+        "scenario": "reference",
+        "init_ms": 4.612500000000004,
+        "render_ms": 1172.9270000000001,
+        "maximum_rss_kib": 161568,
+        "rir_frames": 4096,
+        "wet_frames": 20095,
+        "channels": 2,
+        "output_bytes": 193644
+      },
+      {
+        "backend": "wasm-gc",
+        "scenario": "convex-max-order",
+        "init_ms": 4.574100000000001,
+        "render_ms": 170.3311,
+        "maximum_rss_kib": 92336,
+        "rir_frames": 2432,
+        "wet_frames": 18431,
+        "channels": 1,
+        "output_bytes": 83568
+      },
+      {
+        "backend": "wasm-gc",
+        "scenario": "large-buffer",
+        "init_ms": 11.887599999999999,
+        "render_ms": 7418.7155,
+        "maximum_rss_kib": 474684,
+        "rir_frames": 96000,
+        "wet_frames": 161535,
+        "channels": 8,
+        "output_bytes": 8241236
+      }
+    ]
+  },
+  "review": {
+    "subagents": [
+      "scope review",
+      "core review",
+      "release review"
+    ],
+    "fixes": [
+      "reference candidate-count semantics",
+      "early JSON allocation rejection",
+      "band resolution across sample rates",
+      "prism per-receiver diagnostics",
+      "SDK wet null contract",
+      "cached rendering paths",
+      "exact repository provenance",
+      "version-generic packaging",
+      "source hashes included"
+    ],
+    "limitations": [
+      "no real-room calibration or external user adoption evidence",
+      "no scattering/diffraction/obstacles/moving or scheduled multiple sources",
+      "bounded six-band centre-frequency approximation, not IEC/ISO certification",
+      "review eligibility and required scope remain organizer decisions"
+    ]
+  }
+}

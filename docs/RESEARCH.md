@@ -34,4 +34,4 @@ BoxRIR的输入是场景和原始声音，核心任务是正向传播模拟，�
 
 ## 2026-11-07 本地续做决定
 
-按主办方关于成熟实现、迁移价值和完整证据的反馈，新增固定 AudioLabs RIR Generator 0.3.0 的数值核移植模式。原 C++ 内核及 Python 默认参数处理实际转写为 MoonBit，MIT 来源已经披露。此模式与独立凸多边形渲染器分别选择，不声称实现整个 pyroomacoustics。具体能力、迁移价值与目标域限制见 AUDIOLABS-COMPATIBILITY.md；三后端完整波形和实际文件对照见 LOCAL-20261107.md。该决定是对既有 BoxRIR 的实质续做，不冒充新仓库，也未推送或重新申报。
+按主办方关于成熟实现、迁移价值和完整证据的反馈，新增固定 AudioLabs RIR Generator 0.3.0 的数值核移植模式。原 C++ 内核及 Python 默认参数处理实际转写为 MoonBit，MIT 来源已经披露。此模式与独立凸多边形渲染器分别选择，不声称实现整个 pyroomacoustics。具体能力、迁移价值与目标域限制见 AUDIOLABS-COMPATIBILITY.md；三后端完整波形和实际文件对照见 LOCAL-20261107.md。该决定是对既有 BoxRIR 的实质续做，不冒充新仓库，当时尚未推送或重新申报。后续代码已发布，当前状态见 RELEASE-0.3.0.md；不代表已经重新申报或通过审核。

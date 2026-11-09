@@ -42,7 +42,9 @@ jobs:
           python scripts/verify-prism-artifacts.py
           for name in reference-omni reference-cardioid reference-2d; do node bin/boxrir.mjs simulate examples/$name.json examples/probe.wav generated/reference-workflows/$name; done
           python scripts/verify-reference-artifacts.py
-          node scripts/build-release.mjs
+          for name in spectral-before spectral-after spectral-prism; do node bin/boxrir.mjs simulate examples/$name.json examples/probe.wav generated/spectral-workflows/$name; done
+          python scripts/verify-spectral-artifacts.py
+          node scripts/build-release.mjs --require-clean
           node scripts/test-distribution.mjs
           moon package
           python scripts/test-moon-package.py
@@ -70,6 +72,7 @@ jobs:
             generated/prism-browser/results.json
             generated/distribution-verification/result.json
             generated/runtime-benchmark/results.json
+            generated/spectral-verification/*.json
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:

@@ -3,6 +3,7 @@ import {spawnSync} from 'node:child_process';
 import {performance} from 'node:perf_hooks';
 import {createBoxRIR} from '../sdk/client.mjs';
 const scenarios={
+  'spectral-materials':JSON.parse(fs.readFileSync('examples/spectral-before.json')),
   'reference':JSON.parse(fs.readFileSync('examples/reference-omni.json')),
   'convex-max-order':{footprint:Array.from({length:8},(_,i)=>[5+4*Math.cos(i*Math.PI/4),5+4*Math.sin(i*Math.PI/4)]),height:3,source:[4.1,4.7,1.3],receivers:[[6.2,5.4,1.9]],absorption:Array(10).fill(.2),sample_rate:16000,max_order:4,duration_ms:150},
   'large-buffer':{model:'audiolabs_v030',room:[6,4,3],source:[1,1,1],receivers:Array.from({length:8},(_,i)=>[2+i*.1,2,1.2]),beta:Array(6).fill(0),sample_rate:96000,nsample:96000,max_order:0}

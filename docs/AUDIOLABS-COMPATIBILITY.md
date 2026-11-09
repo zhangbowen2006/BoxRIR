@@ -1,6 +1,6 @@
 # AudioLabs 数值兼容模式：能力、来源与证据
 
-源码版本：0.2.0。此模式是有明确目标域的源码移植，不是“全新声学算法”，也没有整体移植 pyroomacoustics。原矩形和凸多边形渲染器仍是不同模式。发布与验证见 RELEASE-0.2.0.md。
+源码版本：0.3.0。此模式是有明确目标域的源码移植，不是“全新声学算法”，也没有整体移植 pyroomacoustics。原矩形和凸多边形渲染器仍是不同模式。发布与验证见 RELEASE-0.3.0.md。
 
 ## 为什么值得迁移
 
@@ -12,7 +12,7 @@
 
 - 上游：[audiolabs/rir-generator v0.3.0](https://github.com/audiolabs/rir-generator/tree/v0.3.0)，SHA：052790faade19074c6921e007fb8972c60e8f0a6。
 - 核：src/rir_generator/_cffi/rir_generator_core.cpp，内部版本 2.2.20201022；默认参数处理来自同版本 Python wrapper。实际转写为 audiolabs.mbt，接口适配位于 api/audiolabs.mbt。
-- 保留 core 与 wrapper 两份 MIT 声明，见 docs/licenses 和 NOTICE。上游源码哈希见 tests/reference/audiolabs-source-manifest.json。
+- 保留 core 与 wrapper 两份 MIT 声明，见 docs/licenses 和 NOTICE。上游源码哈希见 docs/provenance/audiolabs-source-manifest.json。
 - 没有移植 Python/CFFI 绑定、NumPy API、安装打包或绘图库。BoxRIR 增加类型化接口、明确资源预算、结构化错误、WAV/卷积/浏览器接入。
 
 ## 能力对照
@@ -48,7 +48,7 @@
 - 路径明细最多一万条；截断时显式 paths_truncated=true，WAV 仍包含所有已完成的数值贡献。直接声信息独立保留，CLI/界面提示明细上限。
 - 原生库只返回波形；BoxRIR 附加的路径诊断、压力符号和资源统计不属于 Python API 等价范围。
 - v0.3.0 wrapper 的 beta→默认输出长度公式按原版保留，不能当作新的物理 RT60 估计。无耗散 beta 且指定 nsample 时，波形有效；上游会发除零警告。本实现将不可用的估计表示为 null；未给 nsample 时明确报错。
-- 凸多边形属于另一套渲染器，未把其几何偷偷加入本兼容模式。频率相关材料、空气吸收、散射/绕射、多声源混合、移动声源、任意多面体尚未支持。
+- 凸多边形属于另一套渲染器，未把其几何偷偷加入本兼容模式。本兼容模式不额外加入频段材料或空气吸收；这些由独立的 octave_bands 模式提供，见 SPECTRAL.md。散射/绕射、多声源调度、移动声源和任意多面体仍未支持。
 
 ## 验证结果与复现
 

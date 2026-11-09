@@ -11,7 +11,9 @@ const destination=fs.mkdtempSync(path.join(parent,'standalone-'));
 fs.cpSync(original,destination,{recursive:true});
 const sums=JSON.parse(fs.readFileSync(path.join(destination,'SHA256SUMS.json')));
 for(const [file,expected] of Object.entries(sums))assert.equal(createHash('sha256').update(fs.readFileSync(path.join(destination,file))).digest('hex'),expected,file);
-for(const name of ['MoonBit-core.txt','MoonSpectrum.txt','MoonWavKit.txt','rir-generator.txt','audiolabs-rir-generator-MIT.txt'])assert.ok(fs.statSync(path.join(destination,'licenses',name)).size>100);
+for(const name of ['MoonBit-core.txt','MoonSpectrum.txt','MoonWavKit.txt','rir-generator.txt','audiolabs-rir-generator-MIT.txt','python-acoustics-BSD.txt'])assert.ok(fs.statSync(path.join(destination,'licenses',name)).size>100);
+assert.ok(fs.existsSync(path.join(destination,'provenance/audiolabs-source-manifest.json')));
+assert.ok(fs.existsSync(path.join(destination,'provenance/python-acoustics.json')));
 const {createBoxRIR}=await import(pathToFileURL(path.join(destination,'sdk/client.mjs')));
 const result=[];
 for(const backend of ['js','wasm-gc']){
@@ -19,6 +21,8 @@ for(const backend of ['js','wasm-gc']){
   const scene=fs.readFileSync(path.join(destination,'examples/reference-cardioid.json'),'utf8');
   const audio=engine.render(scene,{dryWav:fs.readFileSync(path.join(destination,'examples/probe.wav'))});
   assert.equal(audio.report.config.output_frames,2048);assert.equal(audio.report.wet.frames,18047);
+  const spectral=engine.render(fs.readFileSync(path.join(destination,'examples/spectral-before.json'),'utf8'));
+  assert.equal(spectral.report.config.model,'octave_bands');assert.equal(spectral.report.config.latency_samples,272);
   const cli=spawnSync(process.execPath,['bin/boxrir.mjs','--backend',backend,'simulate','examples/triangle.json','examples/probe.wav','output-'+backend],{cwd:destination,encoding:'utf8',env:{...process.env,MOON_HOME:'',MOON_PATH:'',PATH:path.dirname(process.execPath)}});
   assert.equal(cli.status,0,cli.stderr);
   assert.equal(JSON.parse(fs.readFileSync(path.join(destination,'output-'+backend,'run-manifest.json'))).backend,backend);

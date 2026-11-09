@@ -4,19 +4,26 @@
 
 **用 MoonBit 在本地生成房间脉冲响应和多通道模拟录音。** 提供 MoonBit 库、Node CLI、JS/TypeScript SDK 和浏览器 Wasm GC 工作台，生产计算无需 Python、C++ 绑定或声学服务。
 
-[在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [GitHub 与运行包](https://github.com/zhangbowen2006/BoxRIR/releases) · [运行包说明](docs/RUNTIME.md) · [0.2.0 发布检查](docs/RELEASE-0.2.0.md) · [来源与许可](NOTICE)
+[在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [GitHub 与运行包](https://github.com/zhangbowen2006/BoxRIR/releases) · [运行包说明](docs/RUNTIME.md) · [0.3.0 发布检查](docs/RELEASE-0.3.0.md) · [来源与许可](NOTICE)
 
-本源码版本为 **0.2.0**。Mooncakes 已有版本为 [0.1.1](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.1.1)，不包含本轮扩展；0.2.0 注册表发布状态以实际版本页面为准。
+本源码版本为 **0.3.0**。[Mooncakes 精确版本入口](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.3.0)。
 
-## 三种明确的模型
+```sh
+moon add zhangbowen2006/boxrir@0.3.0
+```
+
+注册表发布后用 `python scripts/test-registry-package.py` 在无本地 workspace 的新工程安装，校验官方包 SHA-256 并运行公开 API；本地源码包验证与注册表验证分别记录。
+
+## 四种明确的模型
 
 | 模式 | 能力与输入约定 | 时间轴 |
 |---|---|---|
+| `octave_bands` | 逐路径六频段墙面能量吸声、按物理距离的空气损耗；温度/湿度/压力方程或显式 dB/m；矩形和凸柱体 | 互补 FIR 合成，核长随采样率缩放；16kHz 默认共同延迟272采样，保留完整尾部 |
 | `audiolabs_v030` | 移植 AudioLabs RIR Generator 0.3.0 数值核；五种麦克风指向性、方位/俯仰、六墙有符号压力反射系数或 T60、二维/三维反射、有限阶/窗口内镜像、可选 100Hz 高通 | 上游 8ms Hann-sinc，固定 `nsample`，无额外延迟；默认长度规则保留上游行为 |
 | 原矩形模型 | 全向点源/接收点，六墙能量吸声、有限总反射阶数、归一化 Hann-sinc | 保留到达时间窗，加共同 `half_width` 延迟及完整核尾部 |
 | 凸多边形柱体 | 3–8 个逆时针严格凸顶点，0–4 阶；逐有限墙面回溯，导出墙序列与命中点 | 与原模型相同；排除棱边、顶点及擦边退化路径 |
 
-所有模式保持通道间时差和原始线性模型增益，输出 Float32 WAV。**压力反射 `beta` 与能量吸声 `absorption` 不能混填，两套滤波/时间轴不能互换。** 这不是新物理算法，也不是整个 pyroomacoustics 的移植。[数值兼容范围](docs/AUDIOLABS-COMPATIBILITY.md) · [原模型与几何约定](docs/MODEL.md)。
+所有模式保持通道间时差和原始线性模型增益，输出 Float32 WAV。**压力反射 `beta` 与能量吸声 `absorption` 不能混填，两套滤波/时间轴不能互换。** 这不是新物理算法，也不是整个 pyroomacoustics 的移植。[频段与空气模型](docs/SPECTRAL.md) · [数值兼容范围](docs/AUDIOLABS-COMPATIBILITY.md) · [原模型与几何约定](docs/MODEL.md)。
 
 ## 直接使用运行包
 
@@ -24,6 +31,7 @@
 
 ```sh
 node bin/boxrir.mjs --version
+node bin/boxrir.mjs simulate examples/spectral-before.json examples/probe.wav output-spectral
 node bin/boxrir.mjs rir examples/stereo.json output-stereo
 node bin/boxrir.mjs simulate examples/triangle.json examples/probe.wav output-triangle
 node bin/boxrir.mjs --backend wasm-gc simulate examples/reference-cardioid.json examples/probe.wav output-cardioid
@@ -76,13 +84,14 @@ python scripts/test-moon-package.py
 | 浏览器音频工具开发者需要无需 Python 服务的双通道响应 | `stereo.json` 执行 `rir`，或在工作台生成 | 两通道 4032 帧；直接声到达约 7.658/8.090ms，每通道 377 条保留路径。独立镜像参考、延迟和增益测试 |
 | 语音/阵列算法开发者需要带方向性差异的可复现模拟录音 | `reference-cardioid.json` + `probe.wav` 执行 `simulate` | 两通道 2048 帧 RIR、18047 帧录音，无额外延迟；原版 AudioLabs C++ 波形和 SciPy 卷积逐样本对照 |
 | 声学原型与教学开发者需要非矩形房间反射 | `triangle.json`、`trapezoid.json`、`pentagon.json` 执行 `simulate` | 两通道 WAV、有限面有效路径和卷积尾部；pyroomacoustics 几何/可见性对照，命中点、反射定律和物理路径长度验证 |
+| 材料/语音原型开发者对比高频吸声处理 | `spectral-before.json` 与 `spectral-after.json` 执行 simulate，仅改变一面墙的部分频带 | 两通道2464帧RIR、18463帧录音；逐路径频段增益、真实WAV与SciPy核对 |
 | 教学人员对比单墙吸声变化 | `wall-before.json` 与 `wall-after.json` 只改变 x 低墙吸声 | 该墙一阶压力增益变成 1/3，到达时间及其他一阶反射不变；独立公式与输出文件核对 |
 
 这些是可运行的合成使用场景，没有外部客户采用或真实房间校准证据。`examples/probe.wav` 是自制扫频，不是测量录音。
 
 ## 接口与资源边界
 
-MoonBit 核心公开 `scene`、`prism_scene`、`trace`、`trace_prism`、`render`、`audiolabs_rir`、`Audio::convolve`；IO 独立。完整签名见 [核心接口](pkg.generated.mbti)、[JSON API](api/pkg.generated.mbti)、[WAV IO](io/pkg.generated.mbti)。
+MoonBit 核心公开 `scene`、`prism_scene`、`trace`、`trace_prism`、`render`、`audiolabs_rir`、`Audio::convolve`、`spectral_rir`、`atmospheric_air_loss`；IO 独立。完整签名见 [核心接口](pkg.generated.mbti)、[JSON API](api/pkg.generated.mbti)、[WAV IO](io/pkg.generated.mbti)。
 
 - 一个全向点源、1–8 接收点；长度 0.1–1000m，声速 100–1000m/s，严格内部点、源与各接收点距离至少 0.01m。
 - 8–96kHz，最多 100 万 RIR 采样。原模型窗口 1–2000ms、阶数 0–12、核半宽 4–32；凸柱体阶数最多 4。
@@ -93,23 +102,28 @@ MoonBit 核心公开 `scene`、`prism_scene`、`trace`、`trace_prism`、`render
 
 这是离线/批处理计算库，不承诺实时音频回调。一次 Windows/Node 压力测量中，八通道 96kHz、96000 帧 RIR 加 65536 帧输入，Wasm GC 总进程峰值约 478MiB，JS 约 588MiB；普通示例更低，但采样数限制不是通用内存保证。完整测量与环境见 [发布检查](docs/RELEASE-0.2.0.md)，可运行 `node scripts/benchmark-runtime.mjs` 复测。
 
-不实现障碍物、绕射、散射、空气吸收、频率相关材料、移动声源、任意多面体或 HRTF。有限阶与有限窗口不能保证真实 RT60；需要这些物理机制时应采用相应完整模拟器。
+六频段模型的最低/最高频段延伸到 DC/Nyquist，以中心频率代表材料和空气损耗，不宣称连续频率精度或标准认证。大气温度只影响损耗，声速仍独立设置。
+
+不实现障碍物、绕射、散射、多声源调度、移动声源、任意多面体或 HRTF。有限阶与有限窗口不能保证真实 RT60；需要这些物理机制时应采用相应完整模拟器。
 
 ## 数值与交付验证
 
-- 24 组 MoonBit 测试：三个本地后端实际通过；Linux CI 另执行 Native。
-- 24 组 Node 测试：SDK、CLI、并发、磁盘写入失败、WAV 异常和数值差分。
+- 31 组 MoonBit 测试：三个本地后端实际通过；Linux CI 另执行 Native。
+- 31 组 Node 测试：SDK、CLI、并发、磁盘写入失败、WAV 异常和数值差分。
 - AudioLabs 原版二进制生成 103 组、155130 个 Float64 样本，三个后端最大绝对误差 2.665×10⁻¹⁵；不对齐、不归一化、不拟合增益。含 64 组预先指定的随机场景。
 - pyroomacoustics：原矩形 32 场景/2330 镜像，凸柱体 20 场景/1687 有效路径；独立六墙 BFS 为 5 场景/225 镜像。几何对照与完整波形对照明确区分。
-- Edge 实际 Wasm GC 工作台：六个场景、音频解码、下载、取消后重启、结果失效和手机布局通过。
+- 新频段模型：12组独立SciPy完整波形/29786样本、36组气象条件；另检查各频段中心响应，防止只验证自制模型一致性。
+- Edge 实际 Wasm GC 工作台：九个场景、音频解码、下载、取消后重启、结果失效和手机布局通过。
 - 独立运行包与 Mooncakes 本地归档均通过独立消费验证；后者没有冒充注册表安装成功。
 
-[完整工程记录](docs/RELEASE-0.2.0.md) · [结构化证据](docs/evidence/0.2.0.json) · [参考再生成方法](tests/reference/README.md)。Native 的 Linux 结果以对应提交的 CI 为准；本机未安装 MSVC/Windows SDK，不声称完成 Windows Native 运行。
+[完整工程记录](docs/RELEASE-0.3.0.md) · [0.3.0本地证据](docs/evidence/0.3.0.json) · [参考再生成方法](tests/reference/README.md)。Native 的 Linux 结果以对应提交的 CI 为准；本机未安装 MSVC/Windows SDK，不声称完成 Windows Native 运行。
 
 ## 来源与许可证
 
 AudioLabs 模式实际移植自 [rir-generator v0.3.0](https://github.com/audiolabs/rir-generator/tree/v0.3.0)，固定 commit `052790faade19074c6921e007fb8972c60e8f0a6`，保留 core/wrapper 两份 MIT 声明。原渲染器和凸几何扩展独立组织实现，不将移植、依赖或生成的参考数据计为原创算法。[来源清单](docs/PROVENANCE.md)。
 
 FFT/IFFT 复用 `chgttyyr/MoonSpectrum@0.2.2`（Apache-2.0），本项目组织共享声源频谱的多通道卷积；WAV 解码复用 `Ridge-Lab/moonwavkit@0.1.3`（MIT），另实现保留增益的窄范围 Float32 写出。BoxRIR 不依赖其他本人参赛项目。代码、测试和文档有 AI 辅助。
+
+空气损耗方程适配自 Python Acoustics 固定源码（BSD-3-Clause），来源哈希随运行包分发。
 
 项目采用 Apache-2.0；发布时须同时保留 [NOTICE](NOTICE) 及 [第三方许可](docs/licenses)。

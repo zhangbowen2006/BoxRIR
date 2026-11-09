@@ -22,7 +22,7 @@ try {
   await page.goto(process.env.BASE_URL||'http://127.0.0.1:4177');
   await page.locator('#run').waitFor({state:'visible'});
   await page.waitForFunction(()=>!document.querySelector('#run').disabled);
-  for(const name of ['triangle','trapezoid','pentagon','reference-omni','reference-cardioid','reference-2d']) {
+  for(const name of ['triangle','trapezoid','pentagon','reference-omni','reference-cardioid','reference-2d','spectral-before','spectral-after','spectral-prism']) {
     await page.locator('#preset').selectOption(name);
     assert.equal(await page.locator('#downloads a').count(),0,'Preset changes must invalidate old downloads');
     await page.locator('#run').click();
@@ -38,8 +38,8 @@ try {
     const file=`generated/prism-browser/${name}.json`;
     await download.saveAs(file);
     const report=JSON.parse(await fs.readFile(file));
-    const directory=name.startsWith('reference-')?'reference-workflows':'prism-workflows';
-    const cli=JSON.parse(await fs.readFile(`generated/${directory}/${name}/report.json`));
+    const directory=name.startsWith('spectral-')?'spectral-workflows':name.startsWith('reference-')?'reference-workflows':'prism-workflows';
+    const cli=JSON.parse(await fs.readFile(`${process.env.WORKFLOW_ROOT||'generated'}/${directory}/${name}/report.json`));
     compare(report,cli);
     if(name.startsWith('reference-')) assert.equal(report.config.latency_samples,0);
     if(name==='reference-omni') assert.match(await page.locator('#status').innerText(),/路径明细已达/);
