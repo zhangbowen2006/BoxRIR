@@ -44,6 +44,8 @@ jobs:
           python scripts/verify-reference-artifacts.py
           for name in spectral-before spectral-after spectral-prism; do node bin/boxrir.mjs simulate examples/$name.json examples/probe.wav generated/spectral-workflows/$name; done
           python scripts/verify-spectral-artifacts.py
+          python scripts/verify-experiments.py
+          python scripts/report-source-scale.py > generated/source-scale.json
           node scripts/build-release.mjs --require-clean
           node scripts/test-distribution.mjs
           moon package
@@ -57,6 +59,7 @@ jobs:
           npx playwright install --with-deps chromium
           node scripts/serve-demo.mjs &
           node scripts/test-prism-browser.mjs
+          node scripts/test-mix-browser.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: boxrir-runtime
@@ -70,6 +73,9 @@ jobs:
             generated/sdk-verification/*.json
             generated/robustness/*.json
             generated/prism-browser/results.json
+            generated/mix-browser/results.json
+            generated/experiment-verification/verification.json
+            generated/source-scale.json
             generated/distribution-verification/result.json
             generated/runtime-benchmark/results.json
             generated/spectral-verification/*.json

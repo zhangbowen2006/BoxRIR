@@ -6,6 +6,13 @@ pub struct DryAudio {
 }
 
 ///|
+/// Decoded channel-major samples preserving interleaved file channel order.
+pub struct WaveAudio {
+  channels : Array[Array[Double]]
+  sample_rate : Int32
+}
+
+///|
 /// Bounds-check chunk framing in a wider integer before invoking the codec.
 /// Metadata is discarded, not recursively interpreted. Only fmt/data are needed.
 fn audio_chunks(bytes : Bytes) -> Result[Bytes, String] {
@@ -90,9 +97,11 @@ fn audio_chunks(bytes : Bytes) -> Result[Bytes, String] {
 ///|
 /// Reuses MoonWavKit for RIFF/PCM decoding; rejects nonfinite float samples before
 /// the upstream decoder can replace them with zero.
-pub fn read_mono(bytes : Bytes) -> Result[DryAudio, String] {
-  if bytes.length() > 4194304 {
-    return Err("source WAV byte limit: 4194304")
+fn read_wave(bytes : Bytes, mono : Bool) -> Result[WaveAudio, String] {
+  let byte_limit = if mono { 4194304 } else { 8388608 }
+  let amplitude_limit = if mono { 1.0e6 } else { 1.0e20 }
+  if bytes.length() > byte_limit {
+    return Err("WAV byte limit: \{byte_limit}")
   }
   let clean = match audio_chunks(bytes) {
     Err(e) => return Err(e)
@@ -104,14 +113,30 @@ pub fn read_mono(bytes : Bytes) -> Result[DryAudio, String] {
     return Err(parsed.error.message)
   }
   let w = parsed.wav
-  if w.format.channels != 1 {
+  let channels = w.format.channels
+  if mono && channels != 1 {
     return Err("source WAV must be mono")
+  }
+  if channels < 1 || channels > 8 {
+    return Err("WAV channel count must be 1..8")
   }
   if w.format.sample_rate < 8000 || w.format.sample_rate > 96000 {
     return Err("source WAV sample rate must be 8000..96000")
   }
-  if w.format.block_align <= 0 || w.data_size / w.format.block_align > 262144 {
-    return Err("source WAV frame limit: 262144")
+  let align = w.format.block_align
+  if align <= 0 ||
+    align != w.format.expected_block_align() ||
+    w.data_size % align != 0 {
+    return Err(
+      "WAV data must contain complete sample frames with valid block alignment",
+    )
+  }
+  let frames = w.data_size / align
+  if frames == 0 {
+    return Err("source WAV has no frames")
+  }
+  if frames > 262144 || frames * channels > 2000000 {
+    return Err("WAV frame or aggregate sample limit exceeded")
   }
   if w.format.is_float() {
     if w.format.bits_per_sample != 32 {
@@ -141,16 +166,41 @@ pub fn read_mono(bytes : Bytes) -> Result[DryAudio, String] {
   if !decoded.ok {
     return Err(decoded.error.message)
   }
-  let samples = decoded.float_buffer.samples
-  if samples.is_empty() {
-    return Err("source WAV has no frames")
+  let buffer = decoded.float_buffer
+  let samples = buffer.samples
+  if buffer.channels != channels ||
+    buffer.sample_rate != w.format.sample_rate ||
+    samples.length() != frames * channels {
+    return Err("unexpected decoded WAV dimensions")
   }
   for v in samples {
-    if !(v >= -1.0e6 && v <= 1.0e6) {
-      return Err("source sample magnitude exceeds 1000000")
+    if !(v >= -amplitude_limit && v <= amplitude_limit) {
+      return Err("WAV sample magnitude exceeds the permitted range")
     }
   }
-  Ok({ samples: samples.copy(), sample_rate: w.format.sample_rate, })
+  Ok({
+    channels: Array::makei(channels, fn(channel) {
+      Array::makei(frames, fn(frame) { samples[frame * channels + channel] })
+    }),
+    sample_rate: w.format.sample_rate,
+  })
+}
+
+///|
+/// Strict single-track input. Does not downmix stereo files.
+pub fn read_mono(bytes : Bytes) -> Result[DryAudio, String] {
+  match read_wave(bytes, true) {
+    Err(reason) => Err(reason)
+    Ok(audio) =>
+      Ok({ samples: audio.channels[0], sample_rate: audio.sample_rate, })
+  }
+}
+
+///|
+/// Decode 1..8 aligned channels from a bounded RIFF/WAVE file. Intended for
+/// response and recording inspection, with no gain adjustment or resampling.
+pub fn read_multichannel(bytes : Bytes) -> Result[WaveAudio, String] {
+  read_wave(bytes, false)
 }
 
 ///|

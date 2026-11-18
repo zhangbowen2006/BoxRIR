@@ -2,13 +2,25 @@
 package "zhangbowen2006/boxrir"
 
 // Values
+pub fn analyze_decay(Array[Array[Double]], Int32, onset_frames? : Array[Int32], end_exclusive? : Int32?, curve_points? : Int32) -> Result[DecayAnalysis, String]
+
 pub fn atmospheric_air_loss(Double, Double, pressure_kpa? : Double) -> Result[Array[Double], String]
 
 pub fn audiolabs_rir(Vec3, Vec3, Array[Vec3], Int32, speed? : Double, beta? : Array[Double]?, reverberation_time? : Double?, nsample? : Int32?, order? : Int32, dimension? : Int32, microphone? : String, orientation? : Array[Double], high_pass? : Bool) -> Result[ReferenceRir, String]
 
+pub fn compare_responses(Array[Array[Double]], Array[Array[Double]], Int32, frames? : Int32?, reference_starts? : Array[Int32], observed_starts? : Array[Int32], lag_radius? : Int32) -> Result[ResponseComparison, String]
+
 pub fn convolve(Response, Array[Double]) -> Result[Audio, String]
 
+pub fn default_probe(Int32) -> Result[Audio, String]
+
+pub fn estimate_transfer(Array[Double], Array[Array[Double]], Int32, Int32, regularization_db? : Double) -> Result[TransferEstimate, String]
+
+pub fn generate_probe(ProbeSpec) -> Result[Audio, String]
+
 pub fn images(Scene) -> Array[ImageSource]
+
+pub fn mix_recordings(Array[RecordingTrack], octaves? : RecordingOctaves?) -> Result[RecordingMix, String]
 
 pub fn octave_centers() -> Array[Double]
 
@@ -17,6 +29,8 @@ pub fn octave_filters(Int32, half_width? : Int32) -> Result[Array[Array[Double]]
 pub fn prism_scene(Array[Point2], Double, Vec3, Array[Vec3], Array[Double], Int32, Int32, Int32, speed? : Double, half_width? : Int32) -> Result[Scene, String]
 
 pub fn render(Scene) -> Response
+
+pub fn resample_audio(Array[Array[Double]], Int32, Int32) -> Result[ResampleResult, String]
 
 pub fn scene(Vec3, Vec3, Array[Vec3], Array[Double], Int32, Int32, Int32, speed? : Double, half_width? : Int32) -> Result[Scene, String]
 
@@ -38,6 +52,50 @@ pub fn Audio::channel(Self, Int32) -> Result[Array[Double], String]
 pub fn Audio::channel_count(Self) -> Int32
 pub fn Audio::convolve(Self, Array[Double]) -> Result[Self, String]
 pub fn Audio::frames(Self) -> Int32
+
+pub(all) struct ChannelDecay {
+  onset_frame : Int32?
+  window_end_exclusive : Int32
+  peak : Double
+  power_sum : Double
+  d50 : Double?
+  c50_db : Double?
+  c80_db : Double?
+  center_time_ms : Double?
+  edt : DecayFit
+  t20 : DecayFit
+  t30 : DecayFit
+  curve : Array[DecayPoint]
+}
+
+pub(all) struct DecayAnalysis {
+  sample_rate : Int32
+  frames : Int32
+  onset_mode : String
+  channels : Array[ChannelDecay]
+}
+
+pub(all) struct DecayFit {
+  status : String
+  seconds_for_60db : Double?
+  slope_db_per_second : Double?
+  r_squared : Double?
+  samples_used : Int32
+  start_frame : Int32?
+  end_frame : Int32?
+}
+
+pub(all) struct DecayPoint {
+  frame_from_onset : Int32
+  energy_db : Double
+}
+
+pub(all) enum Excitation {
+  Impulse
+  Sine(Double)
+  LogSweep(Double, Double)
+  WhiteNoise(UInt32)
+}
 
 pub struct ImageSource {
   image : Vec3
@@ -62,6 +120,48 @@ pub(all) struct Point2 {
   y : Double
 }
 
+pub(all) struct ProbeSpec {
+  sample_rate : Int32
+  active_frames : Int32
+  lead_frames : Int32
+  tail_frames : Int32
+  fade_frames : Int32
+  amplitude : Double
+  excitation : Excitation
+}
+
+pub struct RecordingMix {
+  audio : Audio
+  tracks : Array[RecordingTrackReport]
+}
+
+pub(all) struct RecordingOctaves {
+  band_absorption : Array[Array[Double]]
+  air_db_per_m : Array[Double]
+  filter_half_width : Int32
+}
+
+pub(all) struct RecordingTrack {
+  scene : Scene
+  dry : Array[Double]
+  sample_rate : Int32
+  start_frame : Int32
+  gain : Double
+}
+
+pub struct RecordingTrackReport {
+  start_frame : Int32
+  gain : Double
+  dry_frames : Int32
+  rir_frames : Int32
+  wet_frames : Int32
+  end_frame : Int32
+  latency_samples : Int32
+  contributing_paths : Array[Int32]
+  omitted_late_paths : Array[Int32]
+  zero_gain_paths : Array[Int32]
+}
+
 pub struct ReferenceRir {
   audio : Audio
   beta : Array[Double]
@@ -80,6 +180,14 @@ pub struct ReferenceRir {
   paths_truncated : Bool
 }
 
+pub struct ResampleResult {
+  audio : Audio
+  input_rate : Int32
+  input_frames : Int32
+  tap_radius : Int32
+  cached_phases : Int32
+}
+
 pub struct Response {
   // private fields
 }
@@ -90,6 +198,28 @@ pub fn Response::omitted_late_paths(Self) -> Array[Int32]
 pub fn Response::paths(Self) -> Array[Path]
 pub fn Response::settings(Self) -> Scene
 pub fn Response::zero_gain_paths(Self) -> Array[Int32]
+
+pub(all) struct ResponseComparison {
+  sample_rate : Int32
+  reference_frames : Int32
+  observed_frames : Int32
+  compared_frames : Int32
+  channels : Array[ResponseDifference]
+}
+
+pub(all) struct ResponseDifference {
+  status : String
+  reference_start : Int32
+  requested_observed_start : Int32
+  observed_start : Int32
+  observed_lag_frames : Int32
+  lag_trials : Int32
+  signed_correlation : Double?
+  reference_to_observed_gain : Double?
+  observed_energy_delta_db : Double?
+  raw_error_ratio : Double?
+  adjusted_error_ratio : Double?
+}
 
 pub struct Scene {
   // private fields
@@ -130,6 +260,23 @@ pub struct SpecularPath {
   path : Path
   walls : Array[Int32]
   hits : Array[Vec3]
+}
+
+pub(all) struct TransferChannel {
+  peak : Double
+  outside_window_energy_fraction : Double?
+  reconstruction_error_fraction : Double?
+}
+
+pub struct TransferEstimate {
+  audio : Audio
+  transform_frames : Int32
+  recording_frames : Int32
+  probe_frames : Int32
+  regularization_db : Double
+  reliable_bins : Int32
+  unique_bins : Int32
+  channels : Array[TransferChannel]
 }
 
 pub(all) struct Vec3 {

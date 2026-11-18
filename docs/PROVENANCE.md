@@ -15,7 +15,7 @@ BoxRIR与本人NeedleRail、AgentCanary、MoonGate、WasmSlim等项目在同一�
 | pyroomacoustics 0.10.1 | 开发验证fixture生成器，通过公共API调用；生产库不依赖Python | MIT，文本见licenses/pyroomacoustics.txt |
 | audiolabs/rir-generator v0.3.0 | 原模式为参考；新增 audiolabs.mbt 数值核及默认参数处理为实际移植；原始 C++/Python 仅用于开发验证 | MIT，wrapper文本见licenses/rir-generator.txt；core完整声明见licenses/audiolabs-rir-generator-MIT.txt；固定SHA见docs/provenance/audiolabs-source-manifest.json |
 
-roomacoustics和moondsp为相关项目，调查范围和功能交集见RESEARCH.md。未复用其声学分析、Freeverb实现或Python素材生成代码，不隐瞒同领域已有成果。
+`roomacoustics` 和 `moondsp` 为相关项目，调查范围和功能交集见 [RESEARCH.md](RESEARCH.md)。0.4.0 的宽带衰减分析与 `roomacoustics` 有 Schroeder 反向能量积分、衰减拟合等方法交集。此次测量工作流沿用 BoxRIR 的 WAV I/O、FFT 和前向模型，自行实现多通道实验接口、拟合状态及比较。`roomacoustics` 与 `moondsp` 的代码和素材未进入运行包。[roomacoustics](https://github.com/AYHEY001/roomacoustics)
 
 现有MoonWavKit写出接口仅覆盖整数PCM。BoxRIR为保留原始模型幅度实现了窄范围Float32 WAV输出（fmt/fact/data），不是另起一个通用音频格式项目；独立SciPy读取验证其文件。样例声源是自制一秒合成扫频，没有第三方录音或个人数据。
 

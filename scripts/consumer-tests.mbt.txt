@@ -37,3 +37,39 @@ test "spectral materials and atmosphere are usable from a separate project" {
   assert_eq(result.audio.latency_samples, 272)
   assert_eq(@boxrir.octave_filters(96000).unwrap()[0].length(), 3073)
 }
+
+///|
+test "through the published interface a scene can mix two independent tracks" {
+  let a = @boxrir.scene(
+    { x: 5.0, y: 4.0, z: 3.0 }, { x: 1.0, y: 1.0, z: 1.0 },
+    [{ x: 2.0, y: 1.0, z: 1.0 }], Array::make(6, 0.2), 16000, 1, 60,
+  ).unwrap()
+  let b = @boxrir.scene(
+    { x: 5.0, y: 4.0, z: 3.0 }, { x: 3.0, y: 2.0, z: 1.0 },
+    [{ x: 2.0, y: 1.0, z: 1.0 }], Array::make(6, 0.2), 16000, 1, 60,
+  ).unwrap()
+  let mix = @boxrir.mix_recordings([
+    {scene: a, dry: [0.8, -0.1], sample_rate: 16000, start_frame: 0, gain: 1.0},
+    {scene: b, dry: [0.9], sample_rate: 16000, start_frame: 40, gain: 0.5},
+  ]).unwrap()
+  assert_eq(mix.audio.frames(), 1032)
+  assert_eq(mix.audio.channel_count(), 1)
+  assert_eq(mix.tracks[1].end_frame, 1032)
+}
+
+///|
+test "multichannel WAV and acquisition helpers are available to a consumer" {
+  let probe = @boxrir.generate_probe({
+    sample_rate: 48000, active_frames: 1, lead_frames: 0, tail_frames: 0,
+    fade_frames: 0, amplitude: 1.0, excitation: @boxrir.Impulse,
+  }).unwrap()
+  let recording = [[0.0, 0.7, 0.4, -0.3], [0.5, 0.0, 0.1, 0.0]]
+  let estimate = @boxrir.estimate_transfer(probe.channel(0).unwrap(), recording, 48000, 4).unwrap()
+  assert_true((estimate.audio.channel(0).unwrap()[1] - 0.7).abs() < 1.0e-7)
+  let bytes = @wav.write_float32(recording, 48000).unwrap()
+  let input = @wav.read_multichannel(bytes).unwrap()
+  assert_eq(input.sample_rate, 48000)
+  let metrics = @boxrir.analyze_decay(input.channels, input.sample_rate).unwrap()
+  assert_eq(metrics.channels[0].onset_frame, Some(1))
+  assert_eq(@boxrir.resample_audio(input.channels, 48000, 16000).unwrap().audio.frames(), 2)
+}

@@ -37,8 +37,12 @@ targets = ['js', 'wasm', 'wasm-gc']
 if sys.platform == 'linux':
     targets.append('native')
 for target in targets:
-    subprocess.run(['moon', 'test', '--target', target, '--deny-warn'], cwd=consumer, check=True)
-    checks.append({'target': target, 'consumer_tests': 4, 'passed': True})
+    run = subprocess.run(['moon', 'test', '--target', target, '--deny-warn', '-p', 'boxrir_release/consumer'],
+                         cwd=consumer, check=True, capture_output=True, text=True, encoding='utf-8')
+    print(run.stdout, end='')
+    passed = int(re.search(r'Total tests: \d+, passed: (\d+), failed: 0\.', run.stdout + run.stderr)[1])
+    assert passed > 0, 'the standalone consumer tests must execute'
+    checks.append({'target': target, 'consumer_tests': passed, 'passed': True})
 result = {'version': version, 'source': 'local Mooncakes archive; not a registry publication',
           'packaged_files': len(names), 'private_and_cache_directories_absent': True, 'checks': checks}
 (parent / 'verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')

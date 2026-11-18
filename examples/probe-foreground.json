@@ -1,0 +1,9 @@
+{
+  "kind": "log_sweep",
+  "sample_rate": 16000,
+  "active_frames": 12000,
+  "fade_frames": 160,
+  "start_hz": 160,
+  "end_hz": 2700,
+  "amplitude": 0.7
+}

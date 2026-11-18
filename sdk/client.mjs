@@ -13,9 +13,9 @@ function sceneText(scene) {
   return text;
 }
 
-function encode(bytes) {
-  if (!(bytes instanceof Uint8Array)) throw new BoxRIRError('dryWav must be a Uint8Array', 'INVALID_AUDIO');
-  if (bytes.byteLength > 4194304) throw new BoxRIRError('Source WAV limit: 4 MiB', 'INVALID_AUDIO');
+function encode(bytes, limit = 4194304) {
+  if (!(bytes instanceof Uint8Array)) throw new BoxRIRError('WAV must be a Uint8Array', 'INVALID_AUDIO');
+  if (bytes.byteLength > limit) throw new BoxRIRError(`WAV exceeds ${limit} bytes`, 'INVALID_AUDIO');
   if (typeof Buffer !== 'undefined') return Buffer.from(bytes.buffer,bytes.byteOffset,bytes.byteLength).toString('base64');
   const chunks=[];
   for(let i=0;i<bytes.length;i+=32768) chunks.push(String.fromCharCode(...bytes.subarray(i,i+32768)));
@@ -71,5 +71,44 @@ export async function createBoxRIR({backend='js',jsModuleURL=new URL('./bridge.j
     inspect(scene) { return response(engine.describe_json(sceneText(scene))); },
     referenceSamples(scene) { return response(engine.reference_samples_json(sceneText(scene))); },
     spectralSamples(scene) { return response(engine.spectral_samples_json(sceneText(scene))); },
+    mix(scene, dryWavs) {
+      if (!Array.isArray(dryWavs) || dryWavs.length < 1 || dryWavs.length > 4 ||
+          dryWavs.some(bytes => !(bytes instanceof Uint8Array))) {
+        throw new BoxRIRError('Provide 1..4 WAV byte arrays in track order', 'INVALID_AUDIO');
+      }
+      if (dryWavs.reduce((total, bytes) => total + bytes.byteLength, 0) > 8388608) {
+        throw new BoxRIRError('Track WAV total exceeds 8 MiB', 'INVALID_AUDIO');
+      }
+      const result = response(engine.mix_recordings_json(sceneText(scene),
+        JSON.stringify(dryWavs.map(bytes => encode(bytes)))));
+      return {backend, report:result.report, wetWav:decode(result.wet_wav)};
+    },
+    probe(settings) {
+      const result = response(engine.probe_json(sceneText(settings)));
+      return {sampleRate:result.sample_rate, frames:result.frames, wav:decode(result.probe_wav)};
+    },
+    defaultProbe(sampleRate) {
+      if (!Number.isInteger(sampleRate)) throw new BoxRIRError('Sample rate must be an integer', 'INVALID_AUDIO');
+      const result = response(engine.default_probe_json(sampleRate));
+      return {sampleRate:result.sample_rate, frames:result.frames, wav:decode(result.probe_wav)};
+    },
+    analyzeResponse(wav, options = {}) {
+      return response(engine.analyze_response_json(sceneText(options),encode(wav,8388608))).report;
+    },
+    estimateResponse(probeWav, recordedWav, options) {
+      const result = response(engine.estimate_response_json(sceneText(options),encode(probeWav),
+        encode(recordedWav,8388608)));
+      return {backend, report:result.report, rirWav:decode(result.rir_wav)};
+    },
+    compareResponses(referenceWav, observedWav, options = {}) {
+      return response(engine.compare_responses_json(sceneText(options),
+        encode(referenceWav,8388608),encode(observedWav,8388608))).report;
+    },
+    resample(wav, sampleRate) {
+      if (!Number.isInteger(sampleRate)) throw new BoxRIRError('Sample rate must be an integer', 'INVALID_AUDIO');
+      const result = response(engine.resample_audio_json(
+        JSON.stringify({sample_rate:sampleRate}),encode(wav,8388608)));
+      return {backend,report:result.report,wav:decode(result.wav)};
+    },
   });
 }

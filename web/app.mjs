@@ -6,6 +6,7 @@ function busy(value){$('run').disabled=value;$('cancel').disabled=!value;for(con
 function blobURL(bytes,type){const url=URL.createObjectURL(new Blob([bytes],{type}));urls.push(url);return url;}
 function clearResults(){
   last=null;urls.forEach(URL.revokeObjectURL);urls=[];
+  dryURL=null;
   if(auditionURL)URL.revokeObjectURL(auditionURL);auditionURL=null;
   $('results').classList.add('hidden');$('empty').classList.remove('hidden');$('downloads').replaceChildren();
   for(const id of ['dry-player','wet-player']){$(id).removeAttribute('src');$(id).load();}
@@ -32,13 +33,18 @@ function finish(result){
   busy(false);if(!result.ok){status(result.error,true);return;}
   last=result;$('results').classList.remove('hidden');$('empty').classList.add('hidden');
   const r=result.report,c=r.config;drawRoom(c);$('channels').textContent=c.receivers.length;$('images').textContent=r.geometric_images;$('latency').textContent=`${(1000*c.latency_samples/c.sample_rate).toFixed(2)} ms`;
+  if(result.generated_source)dryURL=blobURL(result.generated_source,'audio/wav');
   $('dry-player').src=dryURL;audition();
   $('paths').replaceChildren();for(let i=0;i<c.receivers.length;i++){
     const direct=(r.direct_paths||r.paths).find(p=>p.receiver===i&&p.order===0),tr=document.createElement('tr');
-    for(const value of [`M${i}`,`${(direct.delay_samples/c.sample_rate*1000).toFixed(3)} ms`,r.contributing_paths[i],r.omitted_late_paths[i]]){const td=document.createElement('td');td.textContent=value;tr.append(td);}$('paths').append(tr);
+    for(const value of [`M${i}`,direct?`${(direct.delay_samples/c.sample_rate*1000).toFixed(3)} ms`:'超出窗口',r.contributing_paths[i],r.omitted_late_paths[i]]){const td=document.createElement('td');td.textContent=value;tr.append(td);}$('paths').append(tr);
   }
   $('downloads').replaceChildren();for(const [name,data,type] of [['rir.wav',result.rir_wav,'audio/wav'],['wet.wav',result.wet_wav,'audio/wav'],['report.json',JSON.stringify(r,null,2),'application/json'],['scene.json',submittedScene,'application/json']]){
     const a=document.createElement('a');a.className='download';a.textContent=name;a.download=name;a.href=blobURL(data,type);$('downloads').append(a);
+  }
+  if(dryURL){
+    const sourceLink=document.createElement('a');sourceLink.className='download';sourceLink.textContent='source.wav';
+    sourceLink.download='source.wav';sourceLink.href=dryURL;$('downloads').append(sourceLink);
   }
   status(`${result.backend==='wasm-gc'?'WebAssembly GC · ':''}计算完成：${c.output_frames} 帧响应，${r.wet.frames} 帧模拟录音。时间窗之外的路径计数见上表。${r.paths_truncated?' 路径明细已达 10000 条上限；波形仍包含全部已计算贡献。':''}`);
 }
@@ -50,14 +56,14 @@ $('cancel').onclick=()=>{requestSerial++;resetWorker();busy(false);status('已�
 $('run').onclick=async()=>{
   const request=++requestSerial;
   try{
-    const sceneText=$('scene').value;if(sceneText.length>65536)throw Error('场景 JSON 不能超过 65536 字符');JSON.parse(sceneText);
+    const sceneText=$('scene').value;if(sceneText.length>65536)throw Error('场景 JSON 不能超过 65536 字符');const scene=JSON.parse(sceneText);
     const file=$('source').files[0];if(file&&file.size===0)throw new Error('选择的 WAV 文件为空');if(file&&file.size>4194304)throw new Error('WAV 文件不能超过 4 MiB');
     busy(true);status('正在读取声源…');
-    const dry=file?await file.arrayBuffer():probe.slice(0);
+    const dry=file?await file.arrayBuffer():scene?.sample_rate===16000?probe.slice(0):null;
     if(request!==requestSerial)return;
     submittedScene=sceneText;
-    clearResults();dryURL=blobURL(dry,'audio/wav');
-    status('正在计算传播路径与模拟录音…');worker.postMessage({scene:sceneText,dry},[dry]);
+    clearResults();if(dry!==null)dryURL=blobURL(dry,'audio/wav');
+    status('正在计算传播路径与模拟录音…');worker.postMessage({scene:sceneText,dry},dry?[dry]:[]);
   }catch(e){if(request===requestSerial){busy(false);status(e.message,true);}}
 };
 try{

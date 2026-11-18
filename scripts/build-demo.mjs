@@ -4,7 +4,9 @@ import {root,cleanProduct,licenses} from './build-support.mjs';
 import {buildSDK} from './build-sdk.mjs';
 const sdk=buildSDK(), destination=cleanProduct('demo');
 fs.mkdirSync(path.join(destination,'examples'));
-for(const name of ['index.html','app.mjs','worker.mjs']) fs.copyFileSync(path.join(root,'web',name),path.join(destination,name));
+for(const name of ['index.html','app.mjs','worker.mjs','mix.html','mix.mjs','mix-worker.mjs']) {
+  fs.copyFileSync(path.join(root,'web',name),path.join(destination,name));
+}
 fs.cpSync(sdk,path.join(destination,'sdk'),{recursive:true});
 for(const name of fs.readdirSync(path.join(root,'examples'))) fs.copyFileSync(path.join(root,'examples',name),path.join(destination,'examples',name));
 licenses(destination);

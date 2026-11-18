@@ -1,0 +1,8 @@
+{
+  "kind": "sine",
+  "sample_rate": 16000,
+  "active_frames": 10000,
+  "fade_frames": 160,
+  "frequency_hz": 510,
+  "amplitude": 0.6
+}

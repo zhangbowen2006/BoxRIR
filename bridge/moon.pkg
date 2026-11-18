@@ -1,6 +1,7 @@
 import {
   "zhangbowen2006/boxrir/api",
   "moonbitlang/core/encoding/base64",
+  "moonbitlang/core/json",
 }
 
 pkgtype(kind: "foreign_library")

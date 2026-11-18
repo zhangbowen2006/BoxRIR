@@ -1,0 +1,112 @@
+{
+  "version": "0.4.0",
+  "date": "2026-11-19",
+  "environment": "Windows; MoonBit moon 0.1.20261021 / moonc 0.10.17+093cb8f9c; Node.js 24.22.1",
+  "scope": "local runtime and local package; remote CI, acceptance, and registry evidence are separate",
+  "moon_check_all_deny_warn": true,
+  "moon_test_passed": {
+    "js": 44,
+    "wasm": 44,
+    "wasm-gc": 44
+  },
+  "node_test_passed": 31,
+  "independent_cli_experiments": {
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "checks": {
+      "js": {
+        "multisource": {
+          "frames": 15631,
+          "channels": 2,
+          "maximum_error_vs_scipy": 5.454238644064802e-09
+        },
+        "transfer": {
+          "frames": 1024,
+          "maximum_error_vs_known_ir": 2.21778364561942e-08
+        },
+        "decay": {
+          "analytic_decay_seconds": 0.42,
+          "t30_reported_seconds": 0.4200000000583981
+        },
+        "resample": {
+          "input_rate": 48000,
+          "output_rate": 16000,
+          "passband_maximum_error": 7.152557368605983e-08,
+          "out_of_band_peak": 2.656708204540337e-07
+        }
+      },
+      "wasm-gc": {
+        "multisource": {
+          "frames": 15631,
+          "channels": 2,
+          "maximum_error_vs_scipy": 5.454238644064802e-09
+        },
+        "transfer": {
+          "frames": 1024,
+          "maximum_error_vs_known_ir": 2.21778364561942e-08
+        },
+        "decay": {
+          "analytic_decay_seconds": 0.42,
+          "t30_reported_seconds": 0.4200000000583981
+        },
+        "resample": {
+          "input_rate": 48000,
+          "output_rate": 16000,
+          "passband_maximum_error": 7.152557368605983e-08,
+          "out_of_band_peak": 2.656708204540337e-07
+        }
+      }
+    },
+    "input_scope": "synthetic inputs with independently generated numerical references"
+  },
+  "edge_wasm_gc": {
+    "browser": "157.0.4341.60",
+    "single_source_cases": 10,
+    "single_source_48khz": {
+      "name": "stereo-no-upload-48000",
+      "channels": 2,
+      "automatic_probe_rate": 48000,
+      "automatic_probe_frames": 48000
+    },
+    "single_source_issues": [],
+    "multi_source": {
+      "backend": "wasm-gc",
+      "browser": "157.0.4341.60",
+      "preset": {
+        "channels": 2,
+        "sampleRate": 16000,
+        "frames": 17631
+      },
+      "supplied_wav_reordering": true,
+      "resynthesized_default_sample_rate": 24000,
+      "invalid_audio": [
+        "empty",
+        "oversize",
+        "invalid_riff",
+        "sample_rate_mismatch"
+      ],
+      "cancellation_during_file_read": true,
+      "old_urls_revoked_on_scene_edit": true,
+      "preview_decoded": true,
+      "mobile_overflow": false,
+      "off_origin_requests": []
+    }
+  },
+  "local_mooncakes_consumer_tests": [
+    {
+      "target": "js",
+      "consumer_tests": 6,
+      "passed": true
+    },
+    {
+      "target": "wasm",
+      "consumer_tests": 6,
+      "passed": true
+    },
+    {
+      "target": "wasm-gc",
+      "consumer_tests": 6,
+      "passed": true
+    }
+  ]
+}

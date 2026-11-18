@@ -1,4 +1,4 @@
-# BoxRIR 0.3.0 runtime
+# BoxRIR 0.4.0 runtime
 
 This standalone bundle needs Node.js 24 or later; it does not need MoonBit,
 Python, npm install or a native compiler. The core is compiled from MoonBit.
@@ -9,6 +9,11 @@ node bin/boxrir.mjs simulate examples/spectral-before.json examples/probe.wav ou
 node bin/boxrir.mjs rir examples/stereo.json output-stereo
 node bin/boxrir.mjs simulate examples/triangle.json examples/probe.wav output-triangle
 node bin/boxrir.mjs --backend wasm-gc simulate examples/reference-cardioid.json examples/probe.wav output-cardioid
+node bin/boxrir.mjs probe examples/probe-foreground.json first
+node bin/boxrir.mjs probe examples/probe-background.json second
+node bin/boxrir.mjs --backend wasm-gc mix examples/mixed-recording.json mixed first/probe.wav second/probe.wav
+node bin/boxrir.mjs verify mixed
+node bin/boxrir.mjs analyze output-stereo/rir.wav decay
 ```
 
 Output directories must be new. Each successful run includes the input scene
@@ -18,6 +23,10 @@ Treat a directory as complete only when the manifest exists and
 `.boxrir-incomplete` is absent. On ordinary write failures, files created by
 the invocation are rolled back. Power loss cannot be made transactional across
 filesystems: keep the incomplete marker and retry into a new directory.
+`mix` produces `wet.wav` and per-track timing, plus the original inputs and a
+manifest. The bundled example has two channels and 15,631 frames. `verify`
+checks the listed sizes and SHA-256 hashes. For probe, estimation, comparison,
+and resampling options, see [the experiment guide](EXPERIMENTS.md).
 
 ```js
 import {createBoxRIR} from './sdk/client.mjs';
@@ -44,8 +53,8 @@ patterns, 2D/3D reflections, 8ms interpolation and optional 100Hz high-pass.
 It preserves the upstream sample window and adds no latency. Do not interchange
 pressure `beta` with energy `absorption` or claim measured-room accuracy.
 
-Resource limits are enforced, rather than advertised as arbitrary room sizes:
-one source, 1–8 receivers, 8–96kHz, <=1M RIR samples, <=2M convolution samples,
+Single-source rendering supports 1–8 receivers, 8–96kHz, <=1M RIR samples,
+<=2M convolution samples,
 <=262144 output frames/channel, <=4MiB mono input, matching sample rate. Reference
 mode accepts 1–192000 frames, order -1..12, <=2M candidate images and <=64M
 interpolation operations; diagnostics cap at 10000 paths (waveforms are not
@@ -53,6 +62,9 @@ truncated by that reporting cap). Convex prisms require 3–8 strictly convex
 counterclockwise vertices, order 0..4 and no edge/corner-degenerate paths.
 Unknown fields, duplicate keys, invalid geometry, NaN/Inf audio and unsupported
 formats fail. No implicit resampling, downmix, limiting or peak normalization.
+The shared-scene mixer supports up to four static sources and retains the full
+timed convolution tails. It supports shoebox, convex-prism and octave-band
+models. The AudioLabs reference API has its own single-source contract.
 
 This package does not implement obstacles, diffraction, scattering, arbitrary
 polyhedra, moving geometry or continuously frequency-dependent materials.

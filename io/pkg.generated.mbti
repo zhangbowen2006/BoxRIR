@@ -4,6 +4,8 @@ package "zhangbowen2006/boxrir/io"
 // Values
 pub fn read_mono(Bytes) -> Result[DryAudio, String]
 
+pub fn read_multichannel(Bytes) -> Result[WaveAudio, String]
+
 pub fn write_float32(Array[Array[Double]], Int32) -> Result[Bytes, String]
 
 // Errors
@@ -11,6 +13,11 @@ pub fn write_float32(Array[Array[Double]], Int32) -> Result[Bytes, String]
 // Types and methods
 pub struct DryAudio {
   samples : Array[Double]
+  sample_rate : Int32
+}
+
+pub struct WaveAudio {
+  channels : Array[Array[Double]]
   sample_rate : Int32
 }
 

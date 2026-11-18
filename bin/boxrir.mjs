@@ -3,8 +3,20 @@ import path from 'node:path';
 import {createBoxRIR} from '../sdk/client.mjs';
 import {version} from '../sdk/version.mjs';
 import {publishBundle,sha256} from './output.mjs';
+import {experiments, runExperiment} from './experiment.mjs';
+import {verifyBundle} from './verify.mjs';
 
-const usage='Usage: node bin/boxrir.mjs [--backend js|wasm-gc] inspect scene.json | rir scene.json new-directory | simulate scene.json mono.wav new-directory';
+const usage=`Usage: node bin/boxrir.mjs [--backend js|wasm-gc] COMMAND
+  inspect scene.json
+  rir scene.json new-directory
+  simulate scene.json mono.wav new-directory
+  mix mix.json new-directory first.wav [second.wav ...]
+  probe probe.json new-directory
+  analyze response.wav new-directory [options.json]
+  estimate probe.wav recorded.wav options.json new-directory
+  compare reference.wav observed.wav options.json new-directory
+  resample input.wav sample-rate new-directory
+  verify output-directory`;
 const argv=process.argv.slice(2);
 let backend='js';
 if(argv[0]==='--backend'){argv.shift();backend=argv.shift();}
@@ -39,18 +51,31 @@ function waveform(wav,report){
 try{
   if(command==='--help' && !sceneFile){console.log(usage);process.exit(0);}
   if(command==='--version' && !sceneFile){console.log(version);process.exit(0);}
-  if(!sceneFile||!['inspect','rir','simulate'].includes(command)||(command==='inspect'&&args.length!==0)||(command==='rir'&&args.length!==1)||(command==='simulate'&&args.length!==2))throw new Error(usage);
-  const directory=command==='inspect'?null:path.resolve(args.at(-1));
+  if(command==='verify'){
+    if (!sceneFile || args.length !== 0) throw new Error(usage);
+    console.log(JSON.stringify(await verifyBundle(sceneFile)));
+    process.exit(0);
+  }
+  const experimentsMode = Object.hasOwn(experiments,command);
+  if(!sceneFile||(!experimentsMode&&(!['inspect','rir','simulate'].includes(command)||(command==='inspect'&&args.length!==0)||(command==='rir'&&args.length!==1)||(command==='simulate'&&args.length!==2))))throw new Error(usage);
+  const directory=command==='inspect'||experimentsMode?null:path.resolve(args.at(-1));
   if(directory && fs.existsSync(directory))throw new Error('Output directory already exists: '+directory);
-  const sceneBytes=read(sceneFile,262144),scene=new TextDecoder('utf-8',{fatal:true}).decode(sceneBytes);
   const bundled=new URL('../sdk/bridge.js',import.meta.url);
   const jsModuleURL=fs.existsSync(bundled)?bundled:new URL('../_build/js/release/build/bridge/bridge.js',import.meta.url);
   const wasmURL=fs.existsSync(new URL('../sdk/boxrir.wasm',import.meta.url))?new URL('../sdk/boxrir.wasm',import.meta.url):new URL('../_build/wasm-gc/release/build/bridge/bridge.wasm',import.meta.url);
   const engineFile=backend==='wasm-gc'?wasmURL:jsModuleURL;
   const engine=await createBoxRIR({backend,jsModuleURL,...(backend==='wasm-gc'?{wasmBytes:fs.readFileSync(wasmURL)}:{})});
-  if(command==='inspect'){
-    console.log(JSON.stringify(engine.inspect(scene),null,2));
-  }else{
+  if (experimentsMode) {
+    const result=runExperiment(command,[sceneFile,...args],{
+      read,engine,version,backend,engineDigest:sha256(fs.readFileSync(engineFile)),usage,
+    });
+    console.log(JSON.stringify(result));
+  } else {
+    const sceneBytes=read(sceneFile,262144),scene=new TextDecoder('utf-8',{fatal:true}).decode(sceneBytes);
+    if(command==='inspect'){
+      console.log(JSON.stringify(engine.inspect(scene),null,2));
+      process.exit(0);
+    }
     const dry=command==='simulate'?read(args[0],4194304):new Uint8Array();
     if(command==='simulate'&&dry.length===0)throw new Error('Source WAV file is empty');
     const result=engine.render(scene,{dryWav:dry});

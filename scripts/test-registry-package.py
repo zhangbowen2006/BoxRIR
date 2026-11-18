@@ -34,8 +34,12 @@ with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
 checks=[]
 targets=['js','wasm','wasm-gc']+(['native'] if sys.platform=='linux' else [])
 for target in targets:
-    subprocess.run(['moon','test','--target',target,'--deny-warn'],cwd=folder,check=True)
-    checks.append({'target':target,'consumer_tests':4,'passed':True})
+    run=subprocess.run(['moon','test','--target',target,'--deny-warn'],cwd=folder,check=True,
+                       capture_output=True,text=True,encoding='utf-8')
+    print(run.stdout,end='')
+    passed=int(re.search(r'Total tests: \d+, passed: (\d+), failed: 0\.',run.stdout+run.stderr)[1])
+    assert passed>0, 'the registry consumer tests must execute'
+    checks.append({'target':target,'consumer_tests':passed,'passed':True})
 result={'module':module,'version':version,'source':'exact Mooncakes registry dependency; no local workspace','registry_checksum':record['checksum'],'anonymous_archive_url':archive_url,'anonymous_archive_checksum_verified':True,'installed_core_matches_archive':True,'downloaded_manifest_verified':True,'checks':checks}
 (parent/'verification.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(result))

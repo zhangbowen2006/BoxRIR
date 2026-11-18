@@ -4,9 +4,9 @@
 
 **用 MoonBit 在本地生成房间脉冲响应和多通道模拟录音。** 提供 MoonBit 库、Node CLI、JS/TypeScript SDK 和浏览器 Wasm GC 工作台，生产计算无需 Python、C++ 绑定或声学服务。
 
-[在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [GitHub 与运行包](https://github.com/zhangbowen2006/BoxRIR/releases) · [运行包说明](docs/RUNTIME.md) · [0.3.0 发布检查](docs/RELEASE-0.3.0.md) · [来源与许可](NOTICE)
+[在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [多声源工作台](https://zhangbowen2006.github.io/BoxRIR/mix.html) · [GitHub 与运行包](https://github.com/zhangbowen2006/BoxRIR/releases) · [十一月验收复现](docs/ACCEPTANCE.md) · [来源与许可](NOTICE)
 
-本源码版本为 **0.3.0**。[Mooncakes 精确版本入口](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.3.0)。
+本源码版本为 **0.4.0**。以下命令安装已核验的 Mooncakes 版本 **0.3.0**。[Mooncakes 精确版本入口](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.3.0)
 
 ```sh
 moon add zhangbowen2006/boxrir@0.3.0
@@ -35,6 +35,7 @@ node bin/boxrir.mjs simulate examples/spectral-before.json examples/probe.wav ou
 node bin/boxrir.mjs rir examples/stereo.json output-stereo
 node bin/boxrir.mjs simulate examples/triangle.json examples/probe.wav output-triangle
 node bin/boxrir.mjs --backend wasm-gc simulate examples/reference-cardioid.json examples/probe.wav output-cardioid
+node bin/boxrir.mjs verify output-cardioid
 ```
 
 输出目录必须不存在。成功目录包含 `rir.wav`、`report.json`、`paths.csv`、`response.svg`、原始 `scene.json` 和完成清单 `run-manifest.json`；simulate 另含 `wet.wav` 及输入快照 `source.wav`。清单记录输入、核心二进制与各输出的 SHA-256。仅在清单存在且 `.boxrir-incomplete` 不存在时消费结果。普通写入失败会回滚本次创建的文件；停电后的不完整目录须保留标记并换新目录重试。已有目录不覆盖，并发进程不能混写。输入/计算/写入错误退出码为 2。
@@ -49,6 +50,10 @@ fs.writeFileSync('my-rir.wav', result.rirWav);
 ```
 
 SDK 带 `.d.mts` 类型声明。浏览器可通过 HTTP(S) 加载整个 `sdk` 目录并选择 `backend:'wasm-gc'`；需要 Wasm GC/JS string builtins，不支持时明确报错。Node 的 Wasm 后端传入 `wasmBytes`。初始化后计算同步执行，交互界面应放到 Worker，取消时终止 Worker。没有静默切换后端。
+
+## 多声源录音与响应实验
+
+`mix` 在同一个房间、采样率和接收阵列下合成 1–4 路静态声源。每轨支持单独的干声、位置、起始帧和线性增益。CLI 和浏览器共用 MoonBit 核心。`probe`、`analyze`、`estimate`、`compare` 和 `resample` 支持生成可重现输入、评估宽带衰减、估计传递响应、对比有时间偏移的响应和显式重采样。[完整实验步骤](docs/EXPERIMENTS.md)
 
 ## 从源码开发
 
@@ -86,6 +91,7 @@ python scripts/test-moon-package.py
 | 声学原型与教学开发者需要非矩形房间反射 | `triangle.json`、`trapezoid.json`、`pentagon.json` 执行 `simulate` | 两通道 WAV、有限面有效路径和卷积尾部；pyroomacoustics 几何/可见性对照，命中点、反射定律和物理路径长度验证 |
 | 材料/语音原型开发者对比高频吸声处理 | `spectral-before.json` 与 `spectral-after.json` 执行 simulate，仅改变一面墙的部分频带 | 两通道2464帧RIR、18463帧录音；逐路径频段增益、真实WAV与SciPy核对 |
 | 教学人员对比单墙吸声变化 | `wall-before.json` 与 `wall-after.json` 只改变 x 低墙吸声 | 该墙一阶压力增益变成 1/3，到达时间及其他一阶反射不变；独立公式与输出文件核对 |
+| 阵列开发者需要同时听到前景与干扰 | 对 `mixed-recording.json` 执行 `mix`，传入两份探针 WAV | 两通道 15,631 帧，第二轨延后 4,000 帧；用 SciPy 独立卷积、叠加并比较实际 WAV。 |
 
 这些是可运行的合成使用场景，没有外部客户采用或真实房间校准证据。`examples/probe.wav` 是自制扫频，不是测量录音。
 
@@ -93,7 +99,7 @@ python scripts/test-moon-package.py
 
 MoonBit 核心公开 `scene`、`prism_scene`、`trace`、`trace_prism`、`render`、`audiolabs_rir`、`Audio::convolve`、`spectral_rir`、`atmospheric_air_loss`；IO 独立。完整签名见 [核心接口](pkg.generated.mbti)、[JSON API](api/pkg.generated.mbti)、[WAV IO](io/pkg.generated.mbti)。
 
-- 一个全向点源、1–8 接收点；长度 0.1–1000m，声速 100–1000m/s，严格内部点、源与各接收点距离至少 0.01m。
+- 单声源模式使用一个点源和 1–8 接收点。长度为 0.1–1000m，声速为 100–1000m/s，源和接收点在室内且间距至少 0.01m。多声源入口复用同一组接收点和房间参数。
 - 8–96kHz，最多 100 万 RIR 采样。原模型窗口 1–2000ms、阶数 0–12、核半宽 4–32；凸柱体阶数最多 4。
 - AudioLabs 模式 `nsample` 1–192000，阶数 -1..12；最多 200 万候选组合、6400 万插值 tap。`-1` 表示时间窗枚举，仍受资源限制。
 - WAV 输入最多 4MiB、262144 帧、单声道，必须同采样率；拒绝 NaN/Inf 和超过 10⁶ 的样本。没有隐式重采样、下混、限幅或峰值归一化。
@@ -104,17 +110,17 @@ MoonBit 核心公开 `scene`、`prism_scene`、`trace`、`trace_prism`、`render
 
 六频段模型的最低/最高频段延伸到 DC/Nyquist，以中心频率代表材料和空气损耗，不宣称连续频率精度或标准认证。大气温度只影响损耗，声速仍独立设置。
 
-不实现障碍物、绕射、散射、多声源调度、移动声源、任意多面体或 HRTF。有限阶与有限窗口不能保证真实 RT60；需要这些物理机制时应采用相应完整模拟器。
+0.4.0 面向固定几何、固定位置和离线时间轴。障碍物、绕射、散射、运动声源、任意多面体和 HRTF 超出当前模型范围。有限阶与有限窗口的合成响应需要现场数据才能评估真实混响时间。
 
 ## 数值与交付验证
 
-- 31 组 MoonBit 测试：三个本地后端实际通过；Linux CI 另执行 Native。
+- MoonBit 测试在本地 JS、Wasm 和 Wasm GC 各通过 44 项。Linux CI 还会运行 Native。
 - 31 组 Node 测试：SDK、CLI、并发、磁盘写入失败、WAV 异常和数值差分。
 - AudioLabs 原版二进制生成 103 组、155130 个 Float64 样本，三个后端最大绝对误差 2.665×10⁻¹⁵；不对齐、不归一化、不拟合增益。含 64 组预先指定的随机场景。
 - pyroomacoustics：原矩形 32 场景/2330 镜像，凸柱体 20 场景/1687 有效路径；独立六墙 BFS 为 5 场景/225 镜像。几何对照与完整波形对照明确区分。
 - 新频段模型：12组独立SciPy完整波形/29786样本、36组气象条件；另检查各频段中心响应，防止只验证自制模型一致性。
-- Edge 实际 Wasm GC 工作台：九个场景、音频解码、下载、取消后重启、结果失效和手机布局通过。
-- 独立运行包与 Mooncakes 本地归档均通过独立消费验证；后者没有冒充注册表安装成功。
+- Edge 实测九个已有场景，并验证 48 kHz 无上传、两轨录音、音频解码、下载、取消后重启和手机布局。
+- 两种生产后端的多声源 WAV、反推误差、合成衰减与重采样经过 SciPy 独立核对。CI 另验证独立安装包和本地 Mooncakes 归档。[0.4.0 验证](docs/VALIDATION.md)
 
 [完整工程记录](docs/RELEASE-0.3.0.md) · [0.3.0本地证据](docs/evidence/0.3.0.json) · [参考再生成方法](tests/reference/README.md)。Native 的 Linux 结果以对应提交的 CI 为准；本机未安装 MSVC/Windows SDK，不声称完成 Windows Native 运行。
 

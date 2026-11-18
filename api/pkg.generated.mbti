@@ -6,15 +6,29 @@ import {
 }
 
 // Values
+pub fn analyze_wav_json(String, Bytes) -> String
+
+pub fn compare_wav_json(String, Bytes, Bytes) -> String
+
+pub fn default_probe_base64_json(Double) -> String
+
 pub fn describe_json(String) -> String
+
+pub fn estimate_wav_json(String, Bytes, Bytes) -> String
 
 pub fn generate_base64_json(String, Bytes) -> String
 
 pub fn generate_json(String, Bytes) -> String
 
+pub fn mix_base64_json(String, Array[Bytes]) -> String
+
 pub fn parse_scene(String) -> Result[@boxrir.Scene, String]
 
+pub fn probe_base64_json(String) -> String
+
 pub fn reference_samples_json(String) -> String
+
+pub fn resample_wav_json(String, Bytes) -> String
 
 pub fn spectral_samples_json(String) -> String
 

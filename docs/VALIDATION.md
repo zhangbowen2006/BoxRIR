@@ -1,5 +1,11 @@
 # 已执行验证与边界
 
+## 0.4.0
+
+2026-11-19，Windows。`moon check --target all --deny-warn` 通过，`js`、`wasm`、`wasm-gc` 各通过 44 项 MoonBit 测试。`node --test tests/*.test.mjs` 的 31 项测试通过。真实 Edge 运行 Wasm GC，覆盖单声源 48 kHz 默认输入、两轨 WAV 下载、上传替换、失败输入、取消、窄屏布局，以及页面链接的旧场景。Python/SciPy 通过 CLI 逐项核验两种后端的混音、反推、衰减和重采样。Linux Native 结果见同一提交的 CI。[实验数据与复现命令](EXPERIMENTS.md) · [本地结果](evidence/0.4.0.json) · [持续集成](https://github.com/zhangbowen2006/BoxRIR/actions/workflows/ci.yml)
+
+## 0.1.1 历史记录
+
 2026-10-31，本地Windows。工具链moon 0.1.20261028 / moonc 0.10.18+6c83a7f62，Node.js 24.22.1。以下只记录BoxRIR，不继承NeedleRail等项目测试数。
 
 | 检查 | 实际结果 |

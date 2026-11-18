@@ -16,6 +16,7 @@ fs.cpSync(path.join(root,'examples'),path.join(destination,'examples'),{recursiv
 licenses(destination);
 fs.cpSync(path.join(root,'docs/provenance'),path.join(destination,'provenance'),{recursive:true});
 fs.copyFileSync(path.join(root,'docs/SPECTRAL.md'),path.join(destination,'SPECTRAL.md'));
+fs.copyFileSync(path.join(root,'docs/EXPERIMENTS.md'),path.join(destination,'EXPERIMENTS.md'));
 fs.copyFileSync(path.join(root,'docs/RUNTIME.md'),path.join(destination,'README.md'));
 fs.writeFileSync(path.join(destination,'package.json'),JSON.stringify({name:'@boxrir/runtime',version,type:'module',private:true,engines:{node:'>=24'},exports:{'.':{types:'./sdk/client.d.mts',import:'./sdk/client.mjs'}}},null,2)+'\n');
 const hashes={};
