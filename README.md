@@ -4,15 +4,15 @@
 
 **用 MoonBit 在本地生成房间脉冲响应和多通道模拟录音。** 提供 MoonBit 库、Node CLI、JS/TypeScript SDK 和浏览器 Wasm GC 工作台，生产计算无需 Python、C++ 绑定或声学服务。
 
-[在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [多声源工作台](https://zhangbowen2006.github.io/BoxRIR/mix.html) · [GitHub 与运行包](https://github.com/zhangbowen2006/BoxRIR/releases) · [十一月验收复现](docs/ACCEPTANCE.md) · [来源与许可](NOTICE)
+[在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [多声源工作台](https://zhangbowen2006.github.io/BoxRIR/mix.html) · [0.4.0 运行包](https://github.com/zhangbowen2006/BoxRIR/releases/tag/v0.4.0) · [十一月验收复现](docs/ACCEPTANCE.md) · [来源与许可](NOTICE)
 
-本源码版本为 **0.4.0**。以下命令安装已核验的 Mooncakes 版本 **0.3.0**。[Mooncakes 精确版本入口](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.3.0)
+**0.4.0 已发布到 Mooncakes。** 在你的 MoonBit 工程中安装并使用该版本。[Mooncakes 0.4.0](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.4.0)
 
 ```sh
-moon add zhangbowen2006/boxrir@0.3.0
+moon add zhangbowen2006/boxrir@0.4.0
 ```
 
-注册表发布后用 `python scripts/test-registry-package.py` 在无本地 workspace 的新工程安装，校验官方包 SHA-256 并运行公开 API；本地源码包验证与注册表验证分别记录。
+独立工程已从注册表安装该版本并验证公开 API。注册表下载包的 SHA-256 与 GitHub 发行页的 Mooncakes 源码附件一致。[使用示例](scripts/consumer-tests.mbt.txt) · [公开交付验证](docs/evidence/0.4.0-release.json)
 
 ## 四种明确的模型
 

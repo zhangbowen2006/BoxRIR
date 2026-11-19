@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-19",
+  "version": "0.4.0",
+  "release_source_revision": "a0bb901cb99fd5b6b6c5c061e2c0fe53712e0e57",
+  "registry": {
+    "module": "zhangbowen2006/boxrir",
+    "version": "0.4.0",
+    "source": "exact Mooncakes registry dependency; no local workspace",
+    "registry_checksum": "b3db6c078673f3607f66aa4d3438e5a61a42be9d44c33218d7a62acbbe8bb2a4",
+    "anonymous_archive_url": "https://download.mooncakes.io/user/zhangbowen2006/boxrir/0.4.0.zip",
+    "anonymous_archive_checksum_verified": true,
+    "installed_core_matches_archive": true,
+    "downloaded_manifest_verified": true,
+    "checks": [
+      {
+        "target": "js",
+        "consumer_tests": 6,
+        "passed": true
+      },
+      {
+        "target": "wasm",
+        "consumer_tests": 6,
+        "passed": true
+      },
+      {
+        "target": "wasm-gc",
+        "consumer_tests": 6,
+        "passed": true
+      }
+    ]
+  },
+  "registry_archive_matches_github_source_attachment": true,
+  "public_runtime_download": {
+    "source": "anonymous GitHub runtime archive",
+    "version": "0.4.0",
+    "runtime_sha256": "5b02a5fb63d7708c00059980b73863c85c26892bfc01662660c3058d89b6a2d8",
+    "source_revision": "a0bb901cb99fd5b6b6c5c061e2c0fe53712e0e57",
+    "archived_files_checked": 53,
+    "mix_frames": 15631,
+    "rir_frames": 2464,
+    "analyzed_channels": 2
+  },
+  "online_browser": {
+    "origin": "https://zhangbowen2006.github.io/BoxRIR/",
+    "engine": "Microsoft Edge 157.0.4341.60 / Wasm GC",
+    "single_source_cases": 10,
+    "single_source_48khz": {
+      "name": "stereo-no-upload-48000",
+      "channels": 2,
+      "automatic_probe_rate": 48000,
+      "automatic_probe_frames": 48000
+    },
+    "multi_source": {
+      "backend": "wasm-gc",
+      "browser": "157.0.4341.60",
+      "preset": {
+        "channels": 2,
+        "sampleRate": 16000,
+        "frames": 17631
+      },
+      "supplied_wav_reordering": true,
+      "resynthesized_default_sample_rate": 24000,
+      "invalid_audio": [
+        "empty",
+        "oversize",
+        "invalid_riff",
+        "sample_rate_mismatch"
+      ],
+      "cancellation_during_file_read": true,
+      "old_urls_revoked_on_scene_edit": true,
+      "preview_decoded": true,
+      "mobile_overflow": false,
+      "off_origin_requests": []
+    }
+  }
+}
