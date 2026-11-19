@@ -12,6 +12,14 @@ assert not any((ancestor/'moon.work').exists() for ancestor in (folder,*folder.p
 (folder/'moon.mod').write_text('name = "boxrir_registry/consumer"\n',encoding='utf-8')
 (folder/'moon.pkg').write_text('import { "'+module+'" @boxrir, "'+module+'/io" @wav } for "test"\n',encoding='utf-8')
 (folder/'consumer_test.mbt').write_text((root/'scripts/consumer-tests.mbt.txt').read_text(encoding='utf-8'),encoding='utf-8')
+guide=(root/'docs/MOONBIT-QUICKSTART.md').read_text(encoding='utf-8')
+quickstart=re.findall(r'```moonbit\r?\n(.*?)\r?\n```',guide,re.S)
+assert len(quickstart)==3, 'expected module, package and runnable example in the guide'
+assert module+'@'+version in quickstart[0], 'quickstart must use the selected release'
+(folder/'quickstart_test.mbt').write_text(quickstart[2]+'\n',encoding='utf-8')
+quickstart_folder=Path(tempfile.mkdtemp(prefix='quickstart-',dir=parent))
+for name,content in zip(('moon.mod','moon.pkg','quickstart_test.mbt'),quickstart):
+    (quickstart_folder/name).write_text(content+'\n',encoding='utf-8')
 subprocess.run(['moon','add',module+'@'+version],cwd=folder,check=True)
 installed=folder/'.mooncakes'/module
 assert installed.exists(), 'registry dependency must be downloaded into the consumer dependency directory'
@@ -19,6 +27,7 @@ installed_manifest=(installed/'moon.mod').read_text(encoding='utf-8')
 assert re.search(r'^version\s*=\s*"([^"]+)"',installed_manifest,re.M)[1]==version
 assert re.search(r'^name\s*=\s*"([^"]+)"',installed_manifest,re.M)[1]==module
 assert installed.resolve()!=root.resolve(), 'must not resolve the working source checkout'
+assert (installed/'docs/MOONBIT-QUICKSTART.md').read_text(encoding='utf-8')==guide, 'published quickstart must match the verified guide'
 index=Path(os.environ.get('MOON_HOME',str(Path.home()/'.moon')))/'registry/index/user'/(module+'.index')
 record=next(row for line in index.read_text(encoding='utf-8').splitlines() if (row:=json.loads(line)).get('version')==version)
 assert not record.get('yanked',False)
@@ -32,6 +41,7 @@ with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
         if not name.endswith('/'):
             assert archive.read(name)==(installed/name).read_bytes(), name
 checks=[]
+quickstart_checks=[]
 targets=['js','wasm','wasm-gc']+(['native'] if sys.platform=='linux' else [])
 for target in targets:
     run=subprocess.run(['moon','test','--target',target,'--deny-warn'],cwd=folder,check=True,
@@ -40,6 +50,10 @@ for target in targets:
     passed=int(re.search(r'Total tests: \d+, passed: (\d+), failed: 0\.',run.stdout+run.stderr)[1])
     assert passed>0, 'the registry consumer tests must execute'
     checks.append({'target':target,'consumer_tests':passed,'passed':True})
-result={'module':module,'version':version,'source':'exact Mooncakes registry dependency; no local workspace','registry_checksum':record['checksum'],'anonymous_archive_url':archive_url,'anonymous_archive_checksum_verified':True,'installed_core_matches_archive':True,'downloaded_manifest_verified':True,'checks':checks}
+    example=subprocess.run(['moon','test','--target',target,'--deny-warn'],cwd=quickstart_folder,check=True,
+                           capture_output=True,text=True,encoding='utf-8')
+    assert re.search(r'Total tests: 1, passed: 1, failed: 0\.',example.stdout+example.stderr), 'the exact guide example must execute'
+    quickstart_checks.append({'target':target,'guide_files_used_verbatim':True,'passed':True})
+result={'module':module,'version':version,'source':'exact Mooncakes registry dependency; no local workspace','registry_checksum':record['checksum'],'anonymous_archive_url':archive_url,'anonymous_archive_checksum_verified':True,'installed_core_matches_archive':True,'downloaded_manifest_verified':True,'quickstart_example_executed':True,'quickstart_checks':quickstart_checks,'checks':checks}
 (parent/'verification.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(result))

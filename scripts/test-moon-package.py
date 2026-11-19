@@ -32,6 +32,11 @@ for name in ('LICENSE', 'NOTICE', 'docs/licenses/audiolabs-rir-generator-MIT.txt
 (consumer / 'moon.mod').write_text('name = "boxrir_release/consumer"\nimport { "' + module + '@' + version + '" }\n', encoding='utf-8')
 (consumer / 'moon.pkg').write_text('import { "' + module + '" @boxrir, "' + module + '/io" @wav } for "test"\n', encoding='utf-8')
 (consumer / 'consumer_test.mbt').write_text((root / 'scripts/consumer-tests.mbt.txt').read_text(encoding='utf-8'), encoding='utf-8')
+guide = (source / 'docs/MOONBIT-QUICKSTART.md').read_text(encoding='utf-8')
+assert guide == (root / 'docs/MOONBIT-QUICKSTART.md').read_text(encoding='utf-8')
+quickstart = re.findall(r'```moonbit\r?\n(.*?)\r?\n```', guide, re.S)
+assert len(quickstart) == 3, 'expected module, package and runnable example in the guide'
+(consumer / 'quickstart_test.mbt').write_text(quickstart[2] + '\n', encoding='utf-8')
 checks = []
 targets = ['js', 'wasm', 'wasm-gc']
 if sys.platform == 'linux':
@@ -44,6 +49,7 @@ for target in targets:
     assert passed > 0, 'the standalone consumer tests must execute'
     checks.append({'target': target, 'consumer_tests': passed, 'passed': True})
 result = {'version': version, 'source': 'local Mooncakes archive; not a registry publication',
-          'packaged_files': len(names), 'private_and_cache_directories_absent': True, 'checks': checks}
+          'packaged_files': len(names), 'private_and_cache_directories_absent': True,
+          'quickstart_example_executed': True, 'checks': checks}
 (parent / 'verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
 print(json.dumps(result))

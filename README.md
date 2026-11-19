@@ -4,15 +4,15 @@
 
 **用 MoonBit 在本地生成房间脉冲响应和多通道模拟录音。** 提供 MoonBit 库、Node CLI、JS/TypeScript SDK 和浏览器 Wasm GC 工作台，生产计算无需 Python、C++ 绑定或声学服务。
 
-[在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [多声源工作台](https://zhangbowen2006.github.io/BoxRIR/mix.html) · [0.4.0 运行包](https://github.com/zhangbowen2006/BoxRIR/releases/tag/v0.4.0) · [十一月验收复现](docs/ACCEPTANCE.md) · [来源与许可](NOTICE)
+[在线工作台](https://zhangbowen2006.github.io/BoxRIR/) · [多声源工作台](https://zhangbowen2006.github.io/BoxRIR/mix.html) · [0.4.1 运行包](https://github.com/zhangbowen2006/BoxRIR/releases/tag/v0.4.1) · [十一月验收复现](https://github.com/zhangbowen2006/BoxRIR/blob/main/docs/ACCEPTANCE.md) · [来源与许可](NOTICE)
 
-**0.4.0 已发布到 Mooncakes。** 在你的 MoonBit 工程中安装并使用该版本。[Mooncakes 0.4.0](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.4.0)
+本源码版本为 **0.4.1**。在你的 MoonBit 工程中安装该精确版本。[Mooncakes 0.4.1](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.4.1)
 
 ```sh
-moon add zhangbowen2006/boxrir@0.4.0
+moon add zhangbowen2006/boxrir@0.4.1
 ```
 
-独立工程已从注册表安装该版本并验证公开 API。注册表下载包的 SHA-256 与 GitHub 发行页的 Mooncakes 源码附件一致。[使用示例](scripts/consumer-tests.mbt.txt) · [公开交付验证](docs/evidence/0.4.0-release.json)
+从全新工程开始，可复制快速开始中的 `moon.mod`、`moon.pkg` 和测试程序，生成双通道响应与录音并验证 WAV。示例随源码包验证执行，注册表安装结果随发行版提供。[MoonBit 快速开始](docs/MOONBIT-QUICKSTART.md) · [更多接口示例](scripts/consumer-tests.mbt.txt) · [0.4.0 公开交付记录](docs/evidence/0.4.0-release.json)
 
 ## 四种明确的模型
 
@@ -122,7 +122,7 @@ MoonBit 核心公开 `scene`、`prism_scene`、`trace`、`trace_prism`、`render
 - Edge 实测九个已有场景，并验证 48 kHz 无上传、两轨录音、音频解码、下载、取消后重启和手机布局。
 - 两种生产后端的多声源 WAV、反推误差、合成衰减与重采样经过 SciPy 独立核对。CI 另验证独立安装包和本地 Mooncakes 归档。[0.4.0 验证](docs/VALIDATION.md)
 
-[完整工程记录](docs/RELEASE-0.3.0.md) · [0.3.0本地证据](docs/evidence/0.3.0.json) · [参考再生成方法](tests/reference/README.md)。Native 的 Linux 结果以对应提交的 CI 为准；本机未安装 MSVC/Windows SDK，不声称完成 Windows Native 运行。
+[0.4.0 数值验证](docs/evidence/0.4.0.json) · [0.4.0 公开安装验证](docs/evidence/0.4.0-release.json) · [参考再生成方法](https://github.com/zhangbowen2006/BoxRIR/blob/main/tests/reference/README.md)。Native 的 Linux 结果以对应提交的 CI 为准；本机未安装 MSVC/Windows SDK，不声称完成 Windows Native 运行。
 
 ## 来源与许可证
 

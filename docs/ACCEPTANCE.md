@@ -2,6 +2,8 @@
 
 BoxRIR 已通过 2026 年十一月黑客松报名初审，依据为参赛者保存的组委会通知。评审材料以此仓库的实际提交和可运行结果为准，最终验收由组委会决定。此前的十月初审和 0.1.1 记录见[历史版本](https://github.com/zhangbowen2006/BoxRIR/blob/6949c70/docs/ACCEPTANCE.md)。
 
+当前交付为 **0.4.1**，补全了 MoonBit 安装、导入、双通道计算与 WAV 的可复制示例。以下数值证据保留 0.4.0 的版本与运行记录。0.4.1 的安装检查和构建结果见[该发行版](https://github.com/zhangbowen2006/BoxRIR/releases/tag/v0.4.1)。
+
 | 官方验收项 | 0.4.0 对应证据 |
 |---|---|
 | MoonBit 为主要实现语言 | 传播路径、卷积与叠加、探针、衰减分析、传递响应估计、比较与重采样均由 MoonBit 执行。`scripts/report-source-scale.py` 统计自研运行源码 5,018 行，其中 MoonBit 4,258 行、宿主 JavaScript 760 行，移植与公式适配另列 375 行。 |
@@ -18,10 +20,10 @@ BoxRIR 已通过 2026 年十一月黑客松报名初审，依据为参赛者保�
 
 1. 浏览器打开[工作台](https://zhangbowen2006.github.io/BoxRIR/)，选择六频段示例，查看双通道响应，下载声源和 WAV。把矩形示例中的 `sample_rate` 改为 `48000`，直接生成，核对下载的 `source.wav` 与录音均为 48 kHz。
 2. 打开[多声源工作台](https://zhangbowen2006.github.io/BoxRIR/mix.html)，运行内置两轨示例，再修改第二轨增益或起始帧。下载新的 `report.json` 和 `wet.wav`，核对时间轴与声道顺序。
-3. 下载[GitHub 0.4.0 运行包](https://github.com/zhangbowen2006/BoxRIR/releases/tag/v0.4.0)，执行[实验文档](EXPERIMENTS.md)中的两轨流程和 `verify`，再用 `analyze` 读取当前响应。独立数值复现可从仓库运行 `python scripts/verify-experiments.py`。
+3. 下载[GitHub 0.4.1 运行包](https://github.com/zhangbowen2006/BoxRIR/releases/tag/v0.4.1)，执行[实验文档](EXPERIMENTS.md)中的两轨流程和 `verify`，再用 `analyze` 读取当前响应。MoonBit 用户可按[快速开始](MOONBIT-QUICKSTART.md)从注册表安装、复制三个文件并运行。
 
 ## 包和验证结果
 
 - `v0.4.0` 固定了运行包的源码修订。可在发行页下载 `SHA256SUMS.txt`，并查看运行包内的 `sdk/build-info.json`。[固定发行版](https://github.com/zhangbowen2006/BoxRIR/releases/tag/v0.4.0) · [发布版 CI](https://github.com/zhangbowen2006/BoxRIR/actions/runs/44424324209)
-- 在 MoonBit 工程运行 `moon add zhangbowen2006/boxrir@0.4.0`。库的安装验证可以从仓库运行 `python scripts/test-registry-package.py`，脚本会在新工程安装并执行接口测试。[Mooncakes 0.4.0](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.4.0) · [公开交付验证](evidence/0.4.0-release.json)
+- 在 MoonBit 工程运行 `moon add zhangbowen2006/boxrir@0.4.1`。库的安装验证可以从仓库运行 `python scripts/test-registry-package.py`，脚本会在新工程安装并执行接口测试及快速开始。[Mooncakes 0.4.1](https://mooncakes.io/docs/zhangbowen2006/boxrir@0.4.1) · [0.4.0 公开交付验证](evidence/0.4.0-release.json)
 - 验证了合成响应、公开参考实现与端到端文件流程。现场测量、设备校准、材料标定和外部采用情况尚未取得证据。[本地验证结果](evidence/0.4.0.json) · [功能边界](EXPERIMENTS.md)

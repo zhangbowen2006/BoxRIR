@@ -1,6 +1,6 @@
 # 录音与响应实验
 
-BoxRIR 0.4.0 提供共享场景的多声源录音、探针、宽带衰减分析、传递响应估计、响应比较和显式重采样。独立运行包使用 Node.js 24。源码用户先执行 `node scripts/build-sdk.mjs`。[运行包](https://github.com/zhangbowen2006/BoxRIR/releases)
+BoxRIR 自 0.4.0 起提供共享场景的多声源录音、探针、宽带衰减分析、传递响应估计、响应比较和显式重采样。独立运行包使用 Node.js 24。源码用户先执行 `node scripts/build-sdk.mjs`。[运行包](https://github.com/zhangbowen2006/BoxRIR/releases)
 
 ## 双声源与双麦克风录音
 

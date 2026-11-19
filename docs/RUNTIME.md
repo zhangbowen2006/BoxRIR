@@ -1,4 +1,4 @@
-# BoxRIR 0.4.0 runtime
+# BoxRIR 0.4.1 runtime
 
 This standalone bundle needs Node.js 24 or later; it does not need MoonBit,
 Python, npm install or a native compiler. The core is compiled from MoonBit.

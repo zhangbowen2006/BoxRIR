@@ -23,3 +23,9 @@
 MoonBit 社区已有 `roomacoustics` 提供衰减曲线、混响时间和房间模态分析，pyroomacoustics 也有混响时间例程。BoxRIR 此次将宽带响应分析用于模拟和录音的可复现实验，与其他库有方法层面的交集。BoxRIR 的交付包含带位置、频段吸声和传播路径的前向模拟、可输入多轨 WAV 的录音合成、公开 MoonBit 接口和浏览器工作台。[roomacoustics](https://github.com/AYHEY001/roomacoustics) · [pyroomacoustics RT60](https://pyroomacoustics.readthedocs.io/en/stable/pyroomacoustics.experimental.rt60.html)
 
 现场互校需要同一房间、声源、麦克风与设备信息。任意多面体、运动声源和高级物理传播也需要分别设计数值参考和验证数据。0.4.0 的验收证据针对文档列明的静态场景。[验收复现](ACCEPTANCE.md)
+
+## 安装示例复核
+
+2026-11-19 再次核对以上项目的公开文档与工作流。其中 MoonFrame、moonasgi 和 floating 都把导入配置和第一次调用放在安装说明附近。MoUI 另外验证了外部工程安装。0.4.1 据此补上可复制的 `moon.mod`、`moon.pkg` 和双通道示例，源码包验证执行其中的示例，注册表验证还会在新工程逐字执行三个文件。[BoxRIR MoonBit 快速开始](MOONBIT-QUICKSTART.md) · [MoonFrame 可执行文档](https://github.com/ihb2032/MoonFrame/blob/main/README.mbt.md) · [MoUI 外部消费](https://github.com/wzzc-dev/MoUI/blob/main/.github/workflows/external-consumer.yml)
+
+此表对照当前公开仓库。各项目持续演进，截图确认的是季度入围名单，当前能力与入围时的状态可能存在差异。
